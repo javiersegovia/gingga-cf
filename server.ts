@@ -18,9 +18,9 @@ app.use(poweredBy())
 app.get('/hono', (c) => c.text('Hono, ' + c.env.MY_VAR))
 
 app.use(async (c, next) => {
-  if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-    const db = drizzle(c.env.DATABASE_URL, { schema })
+  const db = drizzle(c.env.DATABASE_URL, { schema })
 
+  if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
     // @ts-expect-error it's not typed
     const serverBuild = await import('./build/server')
     return remix({
@@ -30,10 +30,10 @@ app.use(async (c, next) => {
       // @ts-ignore
       getLoadContext(c) {
         return {
+          db,
           cloudflare: {
             env: c.env,
           },
-          db,
         }
       },
     })(c, next)
@@ -45,13 +45,11 @@ app.use(async (c, next) => {
       handler = createRequestHandler(build, 'development')
     }
 
-    const db = drizzle(c.env.DATABASE_URL, { schema })
-
     const remixContext = {
+      db,
       cloudflare: {
         env: c.env,
       },
-      db,
     } as unknown as AppLoadContext
     return handler(c.req.raw, remixContext)
   }

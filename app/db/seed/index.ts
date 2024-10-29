@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { db } from '../db.server'
 import { cleanupDb } from './utils'
 import { seedRolesAndPermissions } from './roles-and-permissions'

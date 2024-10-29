@@ -1,4 +1,14 @@
-import { pgTable, text, timestamp, integer, uuid, primaryKey, unique, jsonb, real } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  text,
+  timestamp,
+  integer,
+  uuid,
+  primaryKey,
+  unique,
+  jsonb,
+  real,
+} from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 const timestamps = {
@@ -52,7 +62,12 @@ export type ProjectDetailType = (typeof projectDetailType)[number]
 export const sender = ['USER', 'AI'] as const
 export type Sender = (typeof sender)[number]
 
-export const projectStepName = ['DESCRIPTION', 'OBJECTIVES', 'MODULES', 'ROADMAP'] as const
+export const projectStepName = [
+  'DESCRIPTION',
+  'OBJECTIVES',
+  'MODULES',
+  'ROADMAP',
+] as const
 export type ProjectStepName = (typeof projectStepName)[number]
 
 export const complexityAssessmentCriterionType = [
@@ -62,7 +77,8 @@ export const complexityAssessmentCriterionType = [
   'PERFORMANCE_REQUIREMENTS',
   'SECURITY_CONCERNS',
 ] as const
-export type ComplexityAssessmentCriterionType = (typeof complexityAssessmentCriterionType)[number]
+export type ComplexityAssessmentCriterionType =
+  (typeof complexityAssessmentCriterionType)[number]
 
 // ________________________________________________________________________________________________
 // TABLES
@@ -190,7 +206,9 @@ export const ProjectModules = pgTable('project_modules', {
   description: text('description').notNull(),
   additionalInfo: text('additional_info'),
   order: integer('order').notNull().default(0),
-  generalModuleId: uuid('general_module_id').references(() => GeneralModules.id),
+  generalModuleId: uuid('general_module_id').references(
+    () => GeneralModules.id,
+  ),
 })
 
 export const ProjectFunctionalities = pgTable('project_functionalities', {
@@ -304,20 +322,23 @@ export const FunctionalityTime = pgTable('functionality_time', {
   actualHours: real('actual_hours'),
 })
 
-export const ComplexityAssessmentCriteria = pgTable('complexity_assessment_criteria', {
-  ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  type: text('type', { enum: complexityAssessmentCriterionType }).notNull(),
-  score: real('score').notNull(),
-  justification: text('justification').notNull(),
+export const ComplexityAssessmentCriteria = pgTable(
+  'complexity_assessment_criteria',
+  {
+    ...timestamps,
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    type: text('type', { enum: complexityAssessmentCriterionType }).notNull(),
+    score: real('score').notNull(),
+    justification: text('justification').notNull(),
 
-  functionalityTimeId: uuid('functionality_time_id')
-    .notNull()
-    .references(() => FunctionalityTime.id, {
-      onDelete: 'cascade',
-      onUpdate: 'cascade',
-    }),
-})
+    functionalityTimeId: uuid('functionality_time_id')
+      .notNull()
+      .references(() => FunctionalityTime.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+  },
+)
 
 export const ProjectTimelines = pgTable('project_timelines', {
   ...timestamps,
@@ -399,45 +420,51 @@ export const projectsRelations = relations(Projects, ({ one, many }) => ({
   }),
 }))
 
-export const projectModulesRelations = relations(ProjectModules, ({ one, many }) => ({
-  project: one(Projects, {
-    fields: [ProjectModules.projectId],
-    references: [Projects.id],
+export const projectModulesRelations = relations(
+  ProjectModules,
+  ({ one, many }) => ({
+    project: one(Projects, {
+      fields: [ProjectModules.projectId],
+      references: [Projects.id],
+    }),
+    generalModule: one(GeneralModules, {
+      fields: [ProjectModules.generalModuleId],
+      references: [GeneralModules.id],
+    }),
+    functionalities: many(ProjectFunctionalities, {
+      relationName: 'projectModule_functionalities',
+    }),
+    moduleTime: one(ModuleTime, {
+      fields: [ProjectModules.id],
+      references: [ModuleTime.projectModuleId],
+    }),
+    timelineItemToProjectModules: many(TimelineItemsToProjectModules),
   }),
-  generalModule: one(GeneralModules, {
-    fields: [ProjectModules.generalModuleId],
-    references: [GeneralModules.id],
-  }),
-  functionalities: many(ProjectFunctionalities, {
-    relationName: 'projectModule_functionalities',
-  }),
-  moduleTime: one(ModuleTime, {
-    fields: [ProjectModules.id],
-    references: [ModuleTime.projectModuleId],
-  }),
-  timelineItemToProjectModules: many(TimelineItemsToProjectModules),
-}))
+)
 
-export const projectFunctionalitiesRelations = relations(ProjectFunctionalities, ({ one, many }) => ({
-  project: one(Projects, {
-    fields: [ProjectFunctionalities.projectId],
-    references: [Projects.id],
+export const projectFunctionalitiesRelations = relations(
+  ProjectFunctionalities,
+  ({ one, many }) => ({
+    project: one(Projects, {
+      fields: [ProjectFunctionalities.projectId],
+      references: [Projects.id],
+    }),
+    projectModule: one(ProjectModules, {
+      fields: [ProjectFunctionalities.projectModuleId],
+      references: [ProjectModules.id],
+      relationName: 'projectModule_functionalities',
+    }),
+    functionalityTime: one(FunctionalityTime, {
+      fields: [ProjectFunctionalities.id],
+      references: [FunctionalityTime.projectFunctionalityId],
+    }),
+    functionPoints: one(FunctionPoints, {
+      fields: [ProjectFunctionalities.id],
+      references: [FunctionPoints.projectFunctionalityId],
+    }),
+    testCases: many(TestCases),
   }),
-  projectModule: one(ProjectModules, {
-    fields: [ProjectFunctionalities.projectModuleId],
-    references: [ProjectModules.id],
-    relationName: 'projectModule_functionalities',
-  }),
-  functionalityTime: one(FunctionalityTime, {
-    fields: [ProjectFunctionalities.id],
-    references: [FunctionalityTime.projectFunctionalityId],
-  }),
-  functionPoints: one(FunctionPoints, {
-    fields: [ProjectFunctionalities.id],
-    references: [FunctionPoints.projectFunctionalityId],
-  }),
-  testCases: many(TestCases),
-}))
+)
 
 export const testCasesRelations = relations(TestCases, ({ one }) => ({
   projectFunctionality: one(ProjectFunctionalities, {
@@ -446,12 +473,15 @@ export const testCasesRelations = relations(TestCases, ({ one }) => ({
   }),
 }))
 
-export const complexityAssessmentCriteriaRelations = relations(ComplexityAssessmentCriteria, ({ one }) => ({
-  functionalityTime: one(FunctionalityTime, {
-    fields: [ComplexityAssessmentCriteria.functionalityTimeId],
-    references: [FunctionalityTime.id],
+export const complexityAssessmentCriteriaRelations = relations(
+  ComplexityAssessmentCriteria,
+  ({ one }) => ({
+    functionalityTime: one(FunctionalityTime, {
+      fields: [ComplexityAssessmentCriteria.functionalityTimeId],
+      references: [FunctionalityTime.id],
+    }),
   }),
-}))
+)
 
 export const chatsRelations = relations(Chats, ({ one }) => ({
   project: one(Projects, {
@@ -500,16 +530,19 @@ export const userRolesRelations = relations(UserRoles, ({ one }) => ({
   }),
 }))
 
-export const rolePermissionsRelations = relations(RolePermissions, ({ one }) => ({
-  role: one(Roles, {
-    fields: [RolePermissions.roleId],
-    references: [Roles.id],
+export const rolePermissionsRelations = relations(
+  RolePermissions,
+  ({ one }) => ({
+    role: one(Roles, {
+      fields: [RolePermissions.roleId],
+      references: [Roles.id],
+    }),
+    permission: one(Permissions, {
+      fields: [RolePermissions.permissionId],
+      references: [Permissions.id],
+    }),
   }),
-  permission: one(Permissions, {
-    fields: [RolePermissions.permissionId],
-    references: [Permissions.id],
-  }),
-}))
+)
 
 export const connectionsRelations = relations(Connections, ({ one }) => ({
   user: one(Users, {
@@ -518,9 +551,12 @@ export const connectionsRelations = relations(Connections, ({ one }) => ({
   }),
 }))
 
-export const generalModulesRelations = relations(GeneralModules, ({ many }) => ({
-  projectModules: many(ProjectModules),
-}))
+export const generalModulesRelations = relations(
+  GeneralModules,
+  ({ many }) => ({
+    projectModules: many(ProjectModules),
+  }),
+)
 
 export const functionPointsRelations = relations(FunctionPoints, ({ one }) => ({
   projectFunctionality: one(ProjectFunctionalities, {
@@ -529,13 +565,16 @@ export const functionPointsRelations = relations(FunctionPoints, ({ one }) => ({
   }),
 }))
 
-export const functionalityTimeRelations = relations(FunctionalityTime, ({ one, many }) => ({
-  projectFunctionality: one(ProjectFunctionalities, {
-    fields: [FunctionalityTime.projectFunctionalityId],
-    references: [ProjectFunctionalities.id],
+export const functionalityTimeRelations = relations(
+  FunctionalityTime,
+  ({ one, many }) => ({
+    projectFunctionality: one(ProjectFunctionalities, {
+      fields: [FunctionalityTime.projectFunctionalityId],
+      references: [ProjectFunctionalities.id],
+    }),
+    assessmentCriteria: many(ComplexityAssessmentCriteria),
   }),
-  assessmentCriteria: many(ComplexityAssessmentCriteria),
-}))
+)
 
 export const moduleTimeRelations = relations(ModuleTime, ({ one }) => ({
   projectModule: one(ProjectModules, {
@@ -544,29 +583,38 @@ export const moduleTimeRelations = relations(ModuleTime, ({ one }) => ({
   }),
 }))
 
-export const projectTimelinesRelations = relations(ProjectTimelines, ({ one, many }) => ({
-  project: one(Projects, {
-    fields: [ProjectTimelines.projectId],
-    references: [Projects.id],
+export const projectTimelinesRelations = relations(
+  ProjectTimelines,
+  ({ one, many }) => ({
+    project: one(Projects, {
+      fields: [ProjectTimelines.projectId],
+      references: [Projects.id],
+    }),
+    timelineItems: many(TimelineItems),
   }),
-  timelineItems: many(TimelineItems),
-}))
+)
 
-export const timelineItemsRelations = relations(TimelineItems, ({ one, many }) => ({
-  projectTimeline: one(ProjectTimelines, {
-    fields: [TimelineItems.projectTimelineId],
-    references: [ProjectTimelines.id],
+export const timelineItemsRelations = relations(
+  TimelineItems,
+  ({ one, many }) => ({
+    projectTimeline: one(ProjectTimelines, {
+      fields: [TimelineItems.projectTimelineId],
+      references: [ProjectTimelines.id],
+    }),
+    timelineItemToProjectModules: many(TimelineItemsToProjectModules),
   }),
-  timelineItemToProjectModules: many(TimelineItemsToProjectModules),
-}))
+)
 
-export const timelineItemsToProjectModulesRelations = relations(TimelineItemsToProjectModules, ({ one }) => ({
-  timelineItem: one(TimelineItems, {
-    fields: [TimelineItemsToProjectModules.timelineItemId],
-    references: [TimelineItems.id],
+export const timelineItemsToProjectModulesRelations = relations(
+  TimelineItemsToProjectModules,
+  ({ one }) => ({
+    timelineItem: one(TimelineItems, {
+      fields: [TimelineItemsToProjectModules.timelineItemId],
+      references: [TimelineItems.id],
+    }),
+    projectModule: one(ProjectModules, {
+      fields: [TimelineItemsToProjectModules.projectModuleId],
+      references: [ProjectModules.id],
+    }),
   }),
-  projectModule: one(ProjectModules, {
-    fields: [TimelineItemsToProjectModules.projectModuleId],
-    references: [ProjectModules.id],
-  }),
-}))
+)

@@ -1,5 +1,4 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/cloudflare'
-import { json } from '@remix-run/cloudflare'
 import { useLoaderData } from '@remix-run/react'
 
 export const meta: MetaFunction = () => {
@@ -9,7 +8,7 @@ export const meta: MetaFunction = () => {
 export const loader = async ({ context }: LoaderFunctionArgs) => {
   const { env } = context.cloudflare
 
-  return json({ myVar: env.MY_VAR })
+  return { myVar: env.MY_VAR }
 }
 
 export default function Index() {

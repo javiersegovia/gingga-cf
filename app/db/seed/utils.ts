@@ -14,7 +14,11 @@ export async function cleanupDb() {
   const tables = await db.execute(query)
 
   await db.transaction(async (tx) => {
-    await Promise.all(tables.map((table) => tx.execute(sql.raw(`TRUNCATE TABLE ${table.table_name} CASCADE;`))))
+    await Promise.all(
+      tables.map((table) =>
+        tx.execute(sql.raw(`TRUNCATE TABLE ${table.table_name} CASCADE;`)),
+      ),
+    )
   })
 }
 

@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
 import { db } from '../db.server'
 import { createUser } from './utils'
-import { UserRoles, Roles, Connections } from '../schema'
+import { UserRoles, Roles } from '../schema'
 import { eq } from 'drizzle-orm'
-import { MOCK_CODE_GITHUB } from '@/core/auth/providers/constants'
-import { insertGitHubUser } from '../../../tests/mocks/github'
+// import { MOCK_CODE_GITHUB } from '@/core/auth/providers/constants'
+// import { insertGitHubUser } from '../../../tests/mocks/github'
 
 export async function seedUsers() {
   console.time('👤 Created users...')
@@ -11,9 +12,13 @@ export async function seedUsers() {
   const totalUsers = 5
   for (let i = 0; i < totalUsers; i++) {
     const user = await createUser()
-    const userRole = await db.query.Roles.findFirst({ where: eq(Roles.name, 'user') })
+    const userRole = await db.query.Roles.findFirst({
+      where: eq(Roles.name, 'user'),
+    })
     if (userRole) {
-      await db.insert(UserRoles).values({ userId: user.id, roleId: userRole.id })
+      await db
+        .insert(UserRoles)
+        .values({ userId: user.id, roleId: userRole.id })
     }
   }
 
@@ -33,7 +38,9 @@ export async function seedUsers() {
     lastName: 'Account',
   })
 
-  const adminRole = await db.query.Roles.findFirst({ where: eq(Roles.name, 'admin') })
+  const adminRole = await db.query.Roles.findFirst({
+    where: eq(Roles.name, 'admin'),
+  })
 
   if (adminRole) {
     await db.insert(UserRoles).values([
@@ -42,12 +49,12 @@ export async function seedUsers() {
     ])
   }
 
-  const githubUser = await insertGitHubUser(MOCK_CODE_GITHUB)
-  await db.insert(Connections).values({
-    providerId: githubUser.profile.id,
-    providerName: 'github',
-    userId: adminUser.id,
-  })
+  // const githubUser = await insertGitHubUser(MOCK_CODE_GITHUB)
+  // await db.insert(Connections).values({
+  //   providerId: githubUser.profile.id,
+  //   providerName: 'github',
+  //   userId: adminUser.id,
+  // })
 
   console.timeEnd('🐨 Created admin user "jon"')
 }

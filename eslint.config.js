@@ -30,7 +30,15 @@ export default [
   },
 
   {
-    ignores: ['build/', 'node_modules/', 'worker-configuration.d.ts'],
+    ignores: [
+      'build/',
+      'node_modules/',
+      'worker-configuration.d.ts',
+      '.wrangler',
+      '.dev.vars',
+      '.wrangler.toml',
+      'public/',
+    ],
   },
 
   eslint.configs.recommended,
@@ -81,8 +89,9 @@ export default [
         'error',
         {
           devDependencies: true,
-          peerDependencies: true,
+          peerDependencies: false,
           optionalDependencies: false,
+          packageDir: './',
         },
       ],
       // Forbid mutable exports
@@ -93,6 +102,8 @@ export default [
       'import/no-named-export': 'off', // we want everything to be a named export
       // Forbid a module from importing itself
       'import/no-self-import': 'error',
+
+      '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
 ]
