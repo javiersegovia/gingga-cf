@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  @apply bg-white dark:bg-gray-950;
+
+  font-family: system-ui, sans-serif;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+}
