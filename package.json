@@ -9,7 +9,7 @@
     "dev": "remix vite:dev",
     "lint": "eslint . --fix",
     "eslint-inspector": "npx @eslint/config-inspector@latest",
-    "start": "wrangler pages dev ./build/client",
+    "start": "wrangler dev",
     "typecheck": "tsc",
     "typegen": "wrangler types"
   },

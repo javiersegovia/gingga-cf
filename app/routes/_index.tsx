@@ -8,6 +8,7 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ context }: LoaderFunctionArgs) => {
   const { env } = context.cloudflare
+
   return json({ myVar: env.MY_VAR })
 }
 
