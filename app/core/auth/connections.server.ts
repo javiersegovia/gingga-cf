@@ -1,31 +1,54 @@
-import { createCookieSessionStorage } from '@remix-run/cloudflare'
-import type { ProviderName } from './connections.tsx'
-import { GitHubProvider } from './providers/github.server.ts'
-import type { AuthProvider } from './providers/provider.ts'
+import {
+  AppLoadContext,
+  createCookieSessionStorage,
+  SessionData,
+} from '@remix-run/cloudflare'
+// import type { ProviderName } from './connections'
+// import { GitHubProvider } from './providers/github.server'
+// import type { AuthProvider } from './providers/provider'
 
-export const connectionSessionStorage = createCookieSessionStorage({
-  cookie: {
-    name: 'en_connection',
-    sameSite: 'lax', // CSRF protection is advised if changing to 'none'
-    path: '/',
-    httpOnly: true,
-    maxAge: 60 * 10, // 10 minutes
-    secrets: process.env.SESSION_SECRET.split(','),
-    secure: process.env.NODE_ENV === 'production',
-  },
-})
+export class ConnectionSessionStorage {
+  private static instance: ConnectionSessionStorage
+  private sessionStorage: ReturnType<
+    typeof createCookieSessionStorage<SessionData, SessionData>
+  >
 
-export const providers: Record<ProviderName, AuthProvider> = {
-  github: new GitHubProvider(),
+  private constructor(private c: AppLoadContext) {
+    this.sessionStorage = createCookieSessionStorage({
+      cookie: {
+        name: 'g_connection',
+        sameSite: 'lax', // CSRF protection is advised if changing to 'none'
+        path: '/',
+        httpOnly: true,
+        secrets: [c.cloudflare.env.SESSION_SECRET],
+        secure: c.cloudflare.env.NODE_ENV === 'production',
+      },
+    })
+  }
+
+  static get(context: AppLoadContext) {
+    if (!ConnectionSessionStorage.instance) {
+      ConnectionSessionStorage.instance = new ConnectionSessionStorage(context)
+    }
+    return ConnectionSessionStorage.instance.sessionStorage
+  }
 }
 
-export function handleMockAction(providerName: ProviderName, request: Request) {
-  return providers[providerName].handleMockAction(request)
-}
+// export const providers: Record<ProviderName, AuthProvider> = {
+//   // github: new GitHubProvider(), // todo: add github provider
+// }
 
-export function resolveConnectionData(
-  providerName: ProviderName,
-  providerId: string,
-) {
-  return providers[providerName].resolveConnectionData(providerId)
-}
+// export function handleMockAction(
+//   providerName: ProviderName,
+//   request: Request,
+//   context: AppLoadContext,
+// ) {
+//   return providers[providerName].handleMockAction(request, context)
+// }
+
+// export function resolveConnectionData(
+//   providerName: ProviderName,
+//   providerId: string,
+// ) {
+//   return providers[providerName].resolveConnectionData(providerId)
+// }

@@ -1,4 +1,4 @@
-import { getErrorMessage } from '@/core/misc'
+import { getErrorMessage } from '@/core/utils'
 import {
   Link,
   isRouteErrorResponse,

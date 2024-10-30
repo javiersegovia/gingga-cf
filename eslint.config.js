@@ -66,7 +66,7 @@ export default [
 
   {
     rules: {
-      'no-console': 'warn',
+      'no-console': 'off',
       ...reactHooksPlugin.configs.recommended.rules,
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
@@ -89,8 +89,9 @@ export default [
         'error',
         {
           devDependencies: true,
-          peerDependencies: false,
-          optionalDependencies: false,
+          peerDependencies: true,
+          projectDependencies: false,
+          optionalDependencies: true,
           packageDir: './',
         },
       ],

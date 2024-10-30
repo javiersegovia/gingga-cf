@@ -1,40 +1,35 @@
-import type { RequestHandler, AppLoadContext } from '@remix-run/cloudflare'
-import { drizzle } from 'drizzle-orm/postgres-js'
+import type { RequestHandler } from '@remix-run/cloudflare'
 import { Hono } from 'hono'
 import { poweredBy } from 'hono/powered-by'
 import { remix } from 'remix-hono/handler'
+
+import { getLoadContext } from './load-context'
+import type { ContextEnv } from './load-context'
+
+import { drizzle } from 'drizzle-orm/postgres-js'
 import * as schema from '@/db/schema'
 
-const app = new Hono<{
-  Bindings: {
-    DATABASE_URL: string
-    MY_VAR: string
-  }
-}>()
+const app = new Hono<ContextEnv>()
 
 let handler: RequestHandler | undefined
 
 app.use(poweredBy())
 app.get('/hono', (c) => c.text('Hono, ' + c.env.MY_VAR))
 
-app.use(async (c, next) => {
-  const db = drizzle(c.env.DATABASE_URL, { schema })
+let dbClient: ReturnType<typeof drizzle<typeof schema>> | undefined
 
+app.use(async (c, next) => {
   if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-    // @ts-expect-error it's not typed
+    const db = drizzle(c.env.DATABASE_URL, { schema })
+
+    // @ts-ignore
     const serverBuild = await import('./build/server')
     return remix({
       build: serverBuild,
       mode: 'production',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       getLoadContext(c) {
-        return {
-          db,
-          cloudflare: {
-            env: c.env,
-          },
-        }
+        return { ...getLoadContext(c), db }
       },
     })(c, next)
   } else {
@@ -45,12 +40,14 @@ app.use(async (c, next) => {
       handler = createRequestHandler(build, 'development')
     }
 
+    if (!dbClient) {
+      dbClient = drizzle(c.env.DATABASE_URL, { schema })
+    }
+
     const remixContext = {
-      db,
-      cloudflare: {
-        env: c.env,
-      },
-    } as unknown as AppLoadContext
+      ...getLoadContext(c),
+      db: dbClient,
+    }
     return handler(c.req.raw, remixContext)
   }
 })

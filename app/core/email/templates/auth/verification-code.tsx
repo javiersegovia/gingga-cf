@@ -14,13 +14,13 @@ import {
 } from '@react-email/components'
 
 interface VerificationEmailProps {
+  baseUrl: string
   onboardingUrl: string
   otp: string
 }
 
-const baseUrl = process.env.PROJECT_URL || ''
-
 export const VerificationEmail = ({
+  baseUrl,
   onboardingUrl,
   otp,
 }: VerificationEmailProps) => (
@@ -32,7 +32,7 @@ export const VerificationEmail = ({
         <Container style={container}>
           <Section style={logoContainer}>
             <Img
-              src={`${baseUrl}/img/logo-light.webp`}
+              src={`${baseUrl}/assets/img/logo/logo-light.webp`}
               width="127"
               height="22"
               alt="Gingga"
@@ -41,7 +41,7 @@ export const VerificationEmail = ({
           <Heading style={h1}>Verification Code</Heading>
           <Text style={heroText}>
             Your confirmation code is below - enter it in your open browser
-            window and we'll help you get signed in.
+            window and we&apos;ll help you get signed in.
           </Text>
           <Section style={codeBox}>
             <Text style={confirmationCodeText}>{otp}</Text>
@@ -59,8 +59,8 @@ export const VerificationEmail = ({
           </Section>
 
           <Text style={text} className="py-10">
-            If you didn't request this email, there's nothing to worry about,
-            you can safely ignore it.
+            If you didn&apos;t request this email, there&apos;s nothing to worry
+            about, you can safely ignore it.
           </Text>
 
           <Section>
@@ -88,7 +88,7 @@ export const VerificationEmail = ({
 
 VerificationEmail.PreviewProps = {
   otp: 'DJZ-TLX',
-  onboardingUrl: `${baseUrl}/verify`,
+  onboardingUrl: `${process.env.PROJECT_URL}/verify`,
 } as VerificationEmailProps
 
 export default VerificationEmail

@@ -30,6 +30,7 @@ import {
 } from './input-otp'
 import { Label } from './label'
 import { Textarea } from './textarea'
+import { cn } from '@/core/utils'
 
 interface OnValidateArgs {
   form: HTMLFormElement
@@ -267,8 +268,11 @@ export function CheckboxField({
         {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
         <label
           htmlFor={id}
-          className="text-body-xs self-center hover:cursor-pointer text-gray-300"
           {...labelProps}
+          className={cn(
+            'text-body-xs self-center cursor-pointer text-neutral-300',
+            labelProps?.className,
+          )}
         />
       </div>
 

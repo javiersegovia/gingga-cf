@@ -1,5 +1,5 @@
 import { StatusButton } from '@/components/ui/status-button'
-import { useIsPending } from '@/core/misc'
+import { useIsPending } from '@/core/utils'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import { Form } from '@remix-run/react'
 import { z } from 'zod'

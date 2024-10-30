@@ -1,20 +1,24 @@
-import type { PermissionString } from '@/core/auth/user'
+import type { PermissionString } from '@/core/old_auth/user'
 
-import { requireUserId } from '@/core/auth/auth.server'
-import { parsePermissionString } from '@/core/auth/user'
-import { db } from '@/db/db.server'
+import { requireUserId } from '@/core/old_auth/auth.server'
+import { parsePermissionString } from '@/core/old_auth/user'
 import { Users } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { json } from '@remix-run/cloudflare'
+import { AppLoadContext, json } from '@remix-run/cloudflare'
 
-export async function requireUserWithPermission(
-  request: Request,
-  permission: PermissionString,
-) {
-  const userId = await requireUserId(request)
+export async function requireUserWithPermission({
+  request,
+  context,
+  permission,
+}: {
+  request: Request
+  context: AppLoadContext
+  permission: PermissionString
+}) {
+  const userId = await requireUserId(request, context)
   const permissionData = parsePermissionString(permission)
 
-  const user = await db.query.Users.findFirst({
+  const user = await context.db.query.Users.findFirst({
     where: eq(Users.id, userId),
     with: {
       roles: {
@@ -63,9 +67,17 @@ export async function requireUserWithPermission(
   return user.id
 }
 
-export async function requireUserWithRole(request: Request, name: string) {
-  const userId = await requireUserId(request)
-  const user = await db.query.Users.findFirst({
+export async function requireUserWithRole({
+  request,
+  context,
+  name,
+}: {
+  request: Request
+  context: AppLoadContext
+  name: string
+}) {
+  const userId = await requireUserId(request, context)
+  const user = await context.db.query.Users.findFirst({
     where: eq(Users.id, userId),
     with: {
       roles: {

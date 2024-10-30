@@ -1,4 +1,5 @@
 import { render } from '@react-email/components'
+import { AppLoadContext } from '@remix-run/cloudflare'
 import type { ReactElement } from 'react'
 import { z } from 'zod'
 
@@ -22,16 +23,19 @@ const resendSuccessSchema = z.object({
 })
 
 export async function sendEmail({
+  env,
   react,
   ...options
 }: {
+  env: AppLoadContext['cloudflare']['env']
   to: string
   subject: string
+  from?: string
 } & (
   | { html: string; text: string; react?: never }
   | { react: ReactElement; html?: never; text?: never }
 )) {
-  const from = process.env.RESEND_EMAIL_FROM
+  const from = options.from || env.RESEND_EMAIL_FROM
 
   const email = {
     from,
@@ -40,12 +44,13 @@ export async function sendEmail({
   }
 
   // feel free to remove this condition once you've set up resend
-  if (!process.env.RESEND_API_KEY && !process.env.MOCKS) {
+  if (!env.RESEND_API_KEY) {
     console.error(`RESEND_API_KEY not set and we're not in mocks mode.`)
     console.error(
       'To send emails, set the RESEND_API_KEY environment variable.',
     )
     console.error('Would have sent the following email:', JSON.stringify(email))
+
     return {
       status: 'success',
       data: { id: 'mocked' },
@@ -56,7 +61,7 @@ export async function sendEmail({
     method: 'POST',
     body: JSON.stringify(email),
     headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
   })

@@ -1,3 +1,4 @@
+import { AppLoadContext } from '@remix-run/cloudflare'
 import type { Strategy } from 'remix-auth'
 
 // Define a user type for cleaner typing
@@ -12,7 +13,7 @@ export type ProviderUser = {
 export interface AuthProvider {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAuthStrategy(): Strategy<ProviderUser, any>
-  handleMockAction(request: Request): Promise<void>
+  handleMockAction(request: Request, context: AppLoadContext): Promise<void>
   resolveConnectionData(providerId: string): Promise<{
     displayName: string
     link?: string | null

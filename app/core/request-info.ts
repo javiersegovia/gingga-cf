@@ -11,3 +11,9 @@ export function useRequestInfo() {
 
   return data.requestInfo
 }
+
+export function useOptionalRequestInfo() {
+  const data = useRouteLoaderData<typeof rootLoader>('root')
+
+  return data?.requestInfo
+}

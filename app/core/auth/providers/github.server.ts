@@ -1,9 +1,9 @@
 import { createId as cuid } from '@paralleldrive/cuid2'
-import { redirect } from '@remix-run/cloudflare'
+import { AppLoadContext, redirect } from '@remix-run/cloudflare'
 import { GitHubStrategy } from 'remix-auth-github'
 import { z } from 'zod'
 
-import { connectionSessionStorage } from '../connections.server'
+import { ConnectionSessionStorage } from '../connections.server'
 
 import { MOCK_CODE_GITHUB, MOCK_CODE_GITHUB_HEADER } from './constants'
 import type { AuthProvider } from './provider'
@@ -15,11 +15,13 @@ const shouldMock =
   process.env.NODE_ENV === 'test'
 
 export class GitHubProvider implements AuthProvider {
+  constructor(private context: AppLoadContext) {}
+
   getAuthStrategy() {
     return new GitHubStrategy(
       {
-        clientId: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        clientId: this.context.cloudflare.env.GITHUB_CLIENT_ID,
+        clientSecret: this.context.cloudflare.env.GITHUB_CLIENT_SECRET,
         redirectURI: '/auth/github/callback',
       },
       async ({ profile }) => {
@@ -71,9 +73,10 @@ export class GitHubProvider implements AuthProvider {
     }
   }
 
-  async handleMockAction(request: Request) {
+  async handleMockAction(request: Request, context: AppLoadContext) {
     if (!shouldMock) return
 
+    const connectionSessionStorage = ConnectionSessionStorage.get(context)
     const connectionSession = await connectionSessionStorage.getSession(
       request.headers.get('cookie'),
     )

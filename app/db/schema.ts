@@ -163,6 +163,10 @@ export const Verifications = pgTable(
     digits: integer('digits').notNull(),
     period: integer('period').notNull(),
     charSet: text('char_set').notNull(),
+    userId: uuid('user_id').references(() => Users.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
     expiresAt: timestamp('expires_at'),
   },
   (table) => ({

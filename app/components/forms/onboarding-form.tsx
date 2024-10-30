@@ -1,5 +1,6 @@
 import { CheckboxField, InputField } from '@/components/ui/forms'
 import { FormStatusButton } from '@/components/ui/status-button'
+import { Spacer } from '../ui/spacer'
 
 export function OnboardingForm() {
   return (
@@ -24,30 +25,11 @@ export function OnboardingForm() {
         }}
       />
 
-      <InputField
-        name="password"
-        type="password"
-        labelProps={{ children: 'Password' }}
-        inputProps={{
-          type: 'password',
-          autoComplete: 'new-password',
-        }}
-      />
-
-      <InputField
-        name="confirmPassword"
-        type="password"
-        labelProps={{ children: 'Confirm Password' }}
-        inputProps={{
-          type: 'password',
-          autoComplete: 'new-password',
-        }}
-      />
-
       <CheckboxField
         name="agreeToTermsOfServiceAndPrivacyPolicy"
         labelProps={{
           children: 'Do you agree to our Terms of Service and Privacy Policy?',
+          className: 'text-sm',
         }}
       />
 
@@ -55,10 +37,13 @@ export function OnboardingForm() {
         name="remember"
         labelProps={{
           children: 'Remember me',
+          className: 'text-sm',
         }}
       />
 
-      <FormStatusButton className="w-full" type="submit">
+      <Spacer size="4xs" />
+
+      <FormStatusButton size="xl" className="w-full" type="submit">
         Create account
       </FormStatusButton>
     </>

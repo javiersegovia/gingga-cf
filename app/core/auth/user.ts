@@ -2,7 +2,7 @@ import type { loader as rootLoader } from '@/root'
 import type { SerializeFrom } from '@remix-run/cloudflare'
 import { useRouteLoaderData } from '@remix-run/react'
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isUser(user: any): user is SerializeFrom<typeof rootLoader>['user'] {
   return user && typeof user === 'object' && typeof user.id === 'string'
 }
