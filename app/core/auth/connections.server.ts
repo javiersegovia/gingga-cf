@@ -21,7 +21,7 @@ export class ConnectionSessionStorage {
         path: '/',
         httpOnly: true,
         secrets: [c.cloudflare.env.SESSION_SECRET],
-        secure: c.cloudflare.env.NODE_ENV === 'production',
+        secure: c.cloudflare.env.NODE_ENV !== 'development',
       },
     })
   }

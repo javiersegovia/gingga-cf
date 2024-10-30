@@ -22,24 +22,22 @@ export default function Home() {
   return (
     <div className="bg-black relative">
       <Particles
-        className="inset-0 fixed max-h-screen max-w-screen"
+        className="inset-0 fixed h-screen w-screen"
         quantity={400}
         ease={20}
         color="#ffffff"
         refresh
       />
 
-      <div className="relative z-10">
-        <Navbar />
-        <HeroSection />
-        {/* <MethodologySection /> */}
-        <Spacer size="4xs" />
-        <FeaturesSection />
-        <Spacer size="xs" />
-        <PricingSection />
-        <EstimateProjectSection />
-        <FAQSection />
-      </div>
+      <Navbar />
+      <HeroSection />
+      {/* <MethodologySection /> */}
+      <Spacer size="4xs" />
+      <FeaturesSection />
+      <Spacer size="xs" />
+      <PricingSection />
+      <EstimateProjectSection />
+      <FAQSection />
     </div>
   )
 }

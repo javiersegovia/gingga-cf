@@ -6,7 +6,6 @@ import {
   CardFooter,
   CardHeader,
 } from '@/components/ui/card'
-import { FlickeringGrid } from '@/components/ui/flickering-grid'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/core/utils'
 import { CheckIcon } from '@radix-ui/react-icons'
@@ -31,23 +30,12 @@ function MonthlyPrice({
   )
 }
 
-// const prices = {
-//   core: {
-//     monthly: 3900,
-//     threeMonths: 1950,
-//   },
-//   advanced: {
-//     monthly: 7900,
-//     threeMonths: 3950,
-//   },
-// }
-
-const DISCOUNT = 0.5
+const DISCOUNT_MULTIPLIER = 0.8
 const CORE_PRICE = 3900
 const ADVANCED_PRICE = 7900
 
 function getDiscountedPrice(price: number) {
-  return price * DISCOUNT
+  return price * DISCOUNT_MULTIPLIER
 }
 
 export function PricingSection() {
@@ -84,7 +72,7 @@ export function PricingSection() {
           </div>
 
           <P className="text-gray-300">
-            We are offering <span className="font-bold">50% off</span> for this
+            We are offering <span className="font-bold">20% off</span> for this
             option. We value long-term partnerships and this is a start.
           </P>
         </Card>

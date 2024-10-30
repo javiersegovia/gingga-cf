@@ -1,5 +1,5 @@
 {
-  "name": "hono-cf",
+  "name": "gingga-cf",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -9,7 +9,7 @@
     "dev": "remix vite:dev",
     "lint": "eslint --fix --cache-location ./node_modules/.cache/eslint .",
     "eslint-inspector": "npx @eslint/config-inspector@latest",
-    "start": "wrangler dev",
+    "start": "wrangler pages dev",
     "typecheck": "tsc",
     "typegen": "wrangler types"
   },

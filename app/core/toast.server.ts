@@ -20,17 +20,6 @@ const ToastSchema = z.object({
 export type Toast = z.infer<typeof ToastSchema>
 export type ToastInput = z.input<typeof ToastSchema>
 
-// export const toastSessionStorage = createCookieSessionStorage({
-//   cookie: {
-//     name: 'en_toast',
-//     sameSite: 'lax',
-//     path: '/',
-//     httpOnly: true,
-//     secrets: process.env.SESSION_SECRET.split(','),
-//     secure: process.env.NODE_ENV === 'production',
-//   },
-// })
-
 export class ToastSessionStorage {
   private static instance: ToastSessionStorage
   private sessionStorage: ReturnType<
@@ -46,7 +35,7 @@ export class ToastSessionStorage {
         httpOnly: true,
         maxAge: 60 * 10, // 10 minutes
         secrets: [c.cloudflare.env.SESSION_SECRET],
-        secure: c.cloudflare.env.NODE_ENV === 'production',
+        secure: c.cloudflare.env.NODE_ENV !== 'development',
       },
     })
   }

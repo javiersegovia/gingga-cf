@@ -13,12 +13,10 @@ export type ContextEnv = {
 }
 
 export function getLoadContext(c: Context<ContextEnv>) {
-  const mode = process.env.NODE_ENV
-
   const cloudflare = {
     env: {
       ...c.env,
-      NODE_ENV: mode ?? 'production',
+      NODE_ENV: process.env.NODE_ENV,
     },
   }
 

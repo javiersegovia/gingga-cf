@@ -430,7 +430,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="container max-w-4xl mx-auto py-20">
+    <section className="container max-w-4xl mx-auto py-20 relative z-10">
       <H2 className="mb-8 leading-normal text-center font-medium text-gray-100">
         Streamline your
         <br />

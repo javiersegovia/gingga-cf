@@ -18,7 +18,7 @@ export class AuthSessionStorage {
         path: '/',
         httpOnly: true,
         secrets: [c.cloudflare.env.SESSION_SECRET],
-        secure: c.cloudflare.env.NODE_ENV === 'production',
+        secure: c.cloudflare.env.NODE_ENV !== 'development',
       },
     })
 
@@ -30,9 +30,6 @@ export class AuthSessionStorage {
       value: async function commitSession(
         ...args: Parameters<typeof originalCommitSession>
       ) {
-        console.log('running COMMIT-SESSION!')
-        console.log(args)
-
         const [session, options] = args
         if (options?.expires) {
           session.set('expires', options.expires)

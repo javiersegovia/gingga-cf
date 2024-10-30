@@ -1,23 +1,23 @@
 # Gingga on the Edge
 
-A modern web application built with Remix, Hono, and Cloudflare Workers, and a PostgreSQL database (on Supabase) with Drizzle.
+A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle ORM (with PostgreSQL / Supabase).
 
 ## 🚀 Features
 
 - **Framework**: [Remix](https://remix.run/) with [Hono](https://hono.dev/) middleware
-- **Platform**: [Cloudflare Workers](https://worker.cloudflare.com/)
-- **Database**: PostgreSQL ([Supabase](https://supabase.com/)) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Platform**: [Cloudflare Pages](https://pages.cloudflare.com/)
+- **Database**: PostgreSQL on [Supabase](https://supabase.com/) with [Drizzle ORM](https://orm.drizzle.team/)
 - **Authentication**: GitHub OAuth and TOTP support
 - **Email**: [Resend](https://resend.com/)
 - **UI Components**: [ShadcnUI](https://ui.shadcn.com/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Form Handling**: React Hook Form with Zod validation
+- **Form Handling**: [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) validation
 
 ## 📋 Prerequisites
 
 - Node.js >= 20.0.0
-- pnpm (recommended package manager)
-- PostgreSQL database (Supabase is recommended)
+- pnpm (recommended)
+- Supabase account (PostgreSQL database)
 - Cloudflare account
 
 ## 🛠️ Setup
@@ -37,7 +37,6 @@ pnpm install
 DATABASE_URL=
 SESSION_SECRET=
 HONEYPOT_SECRET=
-TOTP_SECRET=
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 GITHUB_TOKEN=
@@ -79,7 +78,7 @@ pnpm deploy
 - `drizzle.config.ts`: Database schema and migration settings
 - `vite.config.ts`: Vite configuration with Remix and Hono integration
 - `server.ts`: Main server entry point with Hono middleware
-- `wrangler.toml`: Cloudflare Workers configuration
+- `wrangler.toml`: Cloudflare configuration
 
 ## 📝 License
 

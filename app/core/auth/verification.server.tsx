@@ -51,7 +51,7 @@ export class VerifySessionStorage {
         httpOnly: true,
         maxAge: 60 * 10, // 10 minutes
         secrets: [c.cloudflare.env.SESSION_SECRET],
-        secure: c.cloudflare.env.NODE_ENV === 'production',
+        secure: c.cloudflare.env.NODE_ENV !== 'development',
       },
     })
   }
