@@ -199,6 +199,8 @@ function App() {
   const nonce = useNonce()
   const { toast } = useToast()
 
+  console.log({ nonce })
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

@@ -8,6 +8,9 @@ import type { AppLoadContext, EntryContext } from '@remix-run/cloudflare'
 import { RemixServer } from '@remix-run/react'
 import { isbot } from 'isbot'
 import { renderToReadableStream } from 'react-dom/server'
+import { NonceProvider } from '@/core/nonce-provider'
+
+const ABORT_DELAY = 5000
 
 export default async function handleRequest(
   request: Request,
@@ -19,8 +22,14 @@ export default async function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
+  console.log({ nonceFromEntry: loadContext.cloudflare.nonce })
+
+  const nonce = loadContext.cloudflare.nonce ?? ''
+
   const body = await renderToReadableStream(
-    <RemixServer context={remixContext} url={request.url} />,
+    <NonceProvider value={nonce}>
+      <RemixServer context={remixContext} url={request.url} />
+    </NonceProvider>,
     {
       signal: request.signal,
       onError(error: unknown) {

@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
-    "deploy": "wrangler pages deploy",
+    "deploy": "wrangler deploy",
     "dev": "remix vite:dev",
     "lint": "eslint --fix --cache-location ./node_modules/.cache/eslint .",
     "eslint-inspector": "npx @eslint/config-inspector@latest",
-    "start": "wrangler pages dev",
+    "start": "wrangler dev",
     "typecheck": "tsc",
     "typegen": "wrangler types"
   },

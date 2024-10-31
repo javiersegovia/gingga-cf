@@ -1,24 +1,24 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "hono-cf"
-pages_build_output_dir = "./build/client"
-# main = "./server.ts"
+# pages_build_output_dir = "./build/client"
+main = "./server.ts"
 
 compatibility_date = "2024-10-22"
 compatibility_flags = ["nodejs_compat_v2"]
 
 # https://developers.cloudflare.com/workers/static-assets/binding/
-# [assets]
-# binding = "ASSETS"
-# directory = "./build/client"
+[assets]
+binding = "ASSETS"
+directory = "./build/client"
 
-# [build]
-# command = "pnpm run build"
+[build]
+command = "pnpm run build"
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
 # Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
-# [observability]
-# enabled = true
+[observability]
+enabled = true
 
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
