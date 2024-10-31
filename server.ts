@@ -1,9 +1,6 @@
 import type { RequestHandler } from '@remix-run/cloudflare'
 import { Hono } from 'hono'
-import { poweredBy } from 'hono/powered-by'
 import { remix } from 'remix-hono/handler'
-import { staticAssets } from 'remix-hono/cloudflare'
-// import crypto from 'node:crypto'
 
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { getLoadContext } from './load-context'
@@ -16,18 +13,6 @@ const app = new Hono<ContextEnv>()
 
 let handler: RequestHandler | undefined
 
-// app.use(poweredBy())
-
-// let dbClient: ReturnType<typeof drizzle<typeof schema>> | undefined
-// if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-//   app.use('*', staticAssets())
-// }
-
-// app.use(async (c, next) => {
-//   c.set('cspNonce', crypto.randomBytes(16).toString('hex'))
-//   await next()
-// })
-
 app.use(
   '*',
   secureHeaders({
@@ -37,7 +22,7 @@ app.use(
     contentSecurityPolicyReportOnly: {
       connectSrc: [
         process.env.NODE_ENV === 'development' ? 'ws:' : null,
-        // process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
+        process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
         "'self'",
       ].filter(Boolean) as string[],
       fontSrc: ["'self'"],
@@ -53,7 +38,6 @@ app.use(async (c, next) => {
   const db = drizzle(c.env.DATABASE_URL, { schema })
 
   if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-    // @ts-ignore
     const serverBuild = await import('./build/server')
     return remix({
       // @ts-ignore
@@ -73,10 +57,6 @@ app.use(async (c, next) => {
       const { createRequestHandler } = await import('@remix-run/cloudflare')
       handler = createRequestHandler(build, 'development')
     }
-
-    // if (!dbClient) {
-    //   dbClient = drizzle(c.env.DATABASE_URL, { schema })
-    // }
 
     const remixContext = {
       ...getLoadContext(c),
