@@ -1,60 +1,4 @@
-@font-face {
-  font-family: 'Black Crow';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/assets/fonts/black-crow-regular.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Black Crow';
-  font-style: normal;
-  font-weight: 500;
-  src: url('/assets/fonts/black-crow-medium.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Black Crow';
-  font-style: normal;
-  font-weight: 600;
-  src: url('/assets/fonts/black-crow-semibold.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Black Crow';
-  font-style: normal;
-  font-weight: 700;
-  src: url('/assets/fonts/black-crow-bold.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'Guton';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/assets/fonts/Guton-Regular.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Guton';
-  font-style: normal;
-  font-weight: 500;
-  src: url('/assets/fonts/Guton-Medium.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Guton';
-  font-style: normal;
-  font-weight: 600;
-  src: url('/assets/fonts/Guton-SemiBold.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Guton';
-  font-style: normal;
-  font-weight: 700;
-  src: url('/assets/fonts/Guton-Bold.otf') format('opentype');
-}
-@font-face {
-  font-family: 'Guton';
-  font-style: normal;
-  font-weight: 800;
-  src: url('/assets/fonts/Guton-ExtraBold.otf') format('opentype');
-}
-
-@font-face {
+/* @font-face {
   font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 300;
@@ -87,4 +31,4 @@
   font-style: normal;
   font-weight: 700;
   src: url('/assets/fonts/SpaceGrotesk-Bold.ttf') format('truetype');
-}
+} */

@@ -15,7 +15,6 @@ const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
 
 app.use(poweredBy())
-app.get('/hono', (c) => c.text('Hono, ' + c.env.MY_VAR))
 
 let dbClient: ReturnType<typeof drizzle<typeof schema>> | undefined
 

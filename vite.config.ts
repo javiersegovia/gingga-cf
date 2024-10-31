@@ -18,6 +18,7 @@ declare module '@remix-run/cloudflare' {
 export default defineConfig({
   build: {
     minify: true,
+    cssMinify: true,
   },
   ssr: {
     resolve: {
