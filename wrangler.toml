@@ -8,8 +8,8 @@ compatibility_flags = ["nodejs_compat_v2"]
 
 # https://developers.cloudflare.com/workers/static-assets/binding/
 [assets]
-binding = "ASSETS"
 directory = "./build/client"
+# binding = "ASSETS"
 
 [build]
 command = "pnpm run build"

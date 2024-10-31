@@ -19,9 +19,9 @@ let handler: RequestHandler | undefined
 // app.use(poweredBy())
 
 // let dbClient: ReturnType<typeof drizzle<typeof schema>> | undefined
-if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-  app.use('*', staticAssets())
-}
+// if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
+//   app.use('*', staticAssets())
+// }
 
 // app.use(async (c, next) => {
 //   c.set('cspNonce', crypto.randomBytes(16).toString('hex'))

@@ -26,6 +26,9 @@ export default async function handleRequest(
 
   const nonce = loadContext.cloudflare.nonce ?? ''
 
+  let didError = false
+  const newHeaders = new Headers(responseHeaders)
+
   const body = await renderToReadableStream(
     <NonceProvider value={nonce}>
       <RemixServer context={remixContext} url={request.url} />
@@ -35,19 +38,29 @@ export default async function handleRequest(
       onError(error: unknown) {
         // Log streaming rendering errors from inside the shell
         // eslint-disable-next-line no-console
+        didError = true
         console.error(error)
         responseStatusCode = 500
       },
     },
   )
 
-  if (isbot(request.headers.get('user-agent') || '')) {
-    await body.allReady
-  }
+  try {
+    if (isbot(request.headers.get('user-agent') || '')) {
+      await body.allReady
+    }
 
-  responseHeaders.set('Content-Type', 'text/html')
-  return new Response(body, {
-    headers: responseHeaders,
-    status: responseStatusCode,
-  })
+    newHeaders.set('Content-Type', 'text/html')
+    return new Response(body, {
+      status: didError ? 500 : responseStatusCode,
+      headers: newHeaders,
+    })
+  } catch (error) {
+    console.error('Stream error:', error)
+    newHeaders.set('Content-Type', 'text/html')
+    return new Response('Internal Server Error', {
+      status: 500,
+      headers: newHeaders,
+    })
+  }
 }
