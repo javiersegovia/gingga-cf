@@ -12,10 +12,13 @@ import ws from 'ws'
 
 import * as schema from '@/db/schema'
 import { sentry } from '@hono/sentry'
+import { config } from 'dotenv'
 neonConfig.webSocketConstructor = ws
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
+
+config({ path: '.dev.vars' })
 
 app.use('*', async (c, next) => {
   const client = new Client(c.env.DATABASE_URL)

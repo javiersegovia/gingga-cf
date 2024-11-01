@@ -17,7 +17,7 @@ import { hydrateRoot } from 'react-dom/client'
 
 //   }
 // // }, 10)
-console.log('from entry.client.tsx')
+// console.log('from entry.client.tsx')
 
 startTransition(() => {
   hydrateRoot(
