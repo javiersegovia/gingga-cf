@@ -13,9 +13,9 @@ import { sentry } from '@hono/sentry'
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
 
-app.use('*', (c, next) => {
+app.use('*', async (c, next) => {
   c.set('db', drizzle(c.env.DATABASE_URL, { schema }))
-  return next()
+  await next()
 })
 
 app.use(
@@ -60,10 +60,14 @@ app.use(
   }),
 )
 
+// TODO - Implement a proper healthcheck
+// - check if we can connect to the database
 app.get('/resources/healthcheck', (c) => {
-  // todo: check if we can connect to the database
   return c.text('ok')
 })
+
+// TODO - Implement Rate limiting
+// https://github.com/rhinobase/hono-rate-limiter
 
 app.use(async (c, next) => {
   const db = c.get('db')

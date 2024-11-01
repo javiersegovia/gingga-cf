@@ -27,7 +27,7 @@ import { Users } from './db/schema'
 import { eq } from 'drizzle-orm'
 import { useNonce } from './core/nonce-provider'
 import { useToast } from './hooks/use-toast'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import {
   HydrationBoundary,
   QueryClient,
@@ -44,10 +44,14 @@ import { GeneralErrorBoundary } from './components/error-boundary'
 export const links: LinksFunction = () => {
   return [
     {
+      rel: 'icon',
+      href: '/assets/favicon.ico',
+    },
+    {
       rel: 'stylesheet',
       href: tailwindStyleSheetUrl,
     },
-  ].filter(Boolean)
+  ]
 }
 
 export const meta: MetaFunction = () => {
@@ -168,7 +172,9 @@ function Document({
         {allowIndexing ? null : (
           <meta name="robots" content="noindex, nofollow" />
         )}
-        <Links />
+        <Suspense>
+          <Links />
+        </Suspense>
       </head>
 
       <body className="min-h-screen bg-background text-foreground flex flex-col">

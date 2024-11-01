@@ -12,6 +12,7 @@ import {
   Workflow,
   Gauge,
 } from 'lucide-react'
+import { Suspense } from 'react'
 
 const BentoGrid = ({
   className,
@@ -452,7 +453,9 @@ export function FeaturesSection() {
         ))}
       </div>
 
-      <BentoGridDemo />
+      <Suspense>
+        <BentoGridDemo />
+      </Suspense>
     </section>
   )
 }
