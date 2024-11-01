@@ -6,19 +6,19 @@ import { seedGeneralModules } from './general-modules'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import * as schema from '../schema'
 
-const db = drizzle(process.env.DATABASE_URL!, { schema })
+export const db = drizzle(process.env.DATABASE_URL!, { schema })
 
 async function seed() {
   console.info('🌱 Seeding...')
   console.time('🌱 Database has been seeded')
 
   console.time('🧹 Cleaned up the database...')
-  await cleanupDb(db)
+  await cleanupDb()
   console.timeEnd('🧹 Cleaned up the database...')
 
-  await seedRolesAndPermissions(db)
-  await seedUsers(db)
-  await seedGeneralModules(db)
+  await seedRolesAndPermissions()
+  await seedUsers()
+  await seedGeneralModules()
 
   console.timeEnd('🌱 Database has been seeded')
 }

@@ -5,10 +5,13 @@ interface TypographyProps extends PropsWithChildren {
   className?: string
 }
 
+const HEADING_FONT_FAMILY = 'font-title' as const
+
 export function H1({ children, className }: TypographyProps) {
   return (
     <h1
       className={cn(
+        HEADING_FONT_FAMILY,
         'scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl',
         className,
       )}
@@ -22,8 +25,9 @@ export function H2({ children, className }: TypographyProps) {
   return (
     <h2
       className={cn(
-        'scroll-m-20 text-3xl lg:text-4xl font-semibold tracking-tight first:mt-0',
+        'scroll-m-20 text-3xl lg:text-4xl font-medium tracking-tight first:mt-0',
         className,
+        HEADING_FONT_FAMILY,
       )}
     >
       {children}
@@ -37,6 +41,7 @@ export function H3({ children, className }: TypographyProps) {
       className={cn(
         'scroll-m-20 text-2xl font-semibold tracking-tight',
         className,
+        HEADING_FONT_FAMILY,
       )}
     >
       {children}
@@ -50,6 +55,7 @@ export function H4({ children, className }: TypographyProps) {
       className={cn(
         'scroll-m-20 text-xl font-semibold tracking-tight',
         className,
+        HEADING_FONT_FAMILY,
       )}
     >
       {children}

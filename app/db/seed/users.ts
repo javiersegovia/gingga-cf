@@ -5,13 +5,14 @@ import { eq } from 'drizzle-orm'
 import { AppLoadContext } from '@remix-run/cloudflare'
 // import { MOCK_CODE_GITHUB } from '@/core/auth/providers/constants'
 // import { insertGitHubUser } from '../../../tests/mocks/github'
+import { db } from '.'
 
-export async function seedUsers(db: AppLoadContext['db']) {
+export async function seedUsers() {
   console.time('👤 Created users...')
 
   const totalUsers = 5
   for (let i = 0; i < totalUsers; i++) {
-    const user = await createUser(db)
+    const user = await createUser()
     const userRole = await db.query.Roles.findFirst({
       where: eq(Roles.name, 'user'),
     })
@@ -25,13 +26,13 @@ export async function seedUsers(db: AppLoadContext['db']) {
   console.timeEnd('👤 Created users...')
 
   console.time('🐨 Created admin user "jon"')
-  const adminUser = await createUser(db, {
+  const adminUser = await createUser({
     email: 'test@admin.com',
     firstName: 'Test',
     lastName: 'Admin',
     password: '123123123',
   })
-  const adminUser2 = await createUser(db, {
+  const adminUser2 = await createUser({
     email: process.env.ADMIN_USER_EMAIL,
     password: process.env.ADMIN_USER_PASSWORD,
     firstName: 'Admin',

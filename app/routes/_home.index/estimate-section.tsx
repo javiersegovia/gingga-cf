@@ -13,7 +13,7 @@ export function GinggaCTA() {
       <Button
         variant="outline"
         size="2xl"
-        className="from-white to-slate-400 hover:text-white hover:border-gray-800 text-transparent bg-clip-text bg-gradient-to-b animate-gradient"
+        className="bg-gray-950/70 backdrop-blur-sm hover:border-white/80 border border-white/30 hover:text-white hover:bg-black transition-all duration-50 font-medium font-sans text-gray-200"
       >
         <img
           src="/assets/img/logo/logo-iso-dark.svg"
@@ -21,8 +21,8 @@ export function GinggaCTA() {
           width={47}
           className="object-contain"
         />
-        <div className="mx-4 h-8 w-px bg-gray-800" />{' '}
-        <span className="">Create project with AI</span>
+        <div className="mx-4 h-8 w-px bg-white/40" />
+        <span>Get Started with AI</span>
       </Button>
     </Link>
   )

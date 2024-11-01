@@ -2,8 +2,9 @@
 import { Permissions, Roles, RolePermissions } from '../schema'
 import { eq } from 'drizzle-orm'
 import { AppLoadContext } from '@remix-run/cloudflare'
+import { db } from '.'
 
-export async function seedRolesAndPermissions(db: AppLoadContext['db']) {
+export async function seedRolesAndPermissions() {
   console.time('🔑 Created permissions...')
   const entities = ['user']
   const actions = ['create', 'read', 'update', 'delete']

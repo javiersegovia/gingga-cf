@@ -7,14 +7,21 @@ import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
 
 import { drizzle } from 'drizzle-orm/postgres-js'
+
 import * as schema from '@/db/schema'
 import { sentry } from '@hono/sentry'
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
 
+let db: any
+
 app.use('*', async (c, next) => {
-  c.set('db', drizzle(c.env.DATABASE_URL, { schema }))
+  if (!db) {
+    db = drizzle(c.env.DATABASE_URL, { schema })
+  }
+
+  c.set('db', db)
   await next()
 })
 

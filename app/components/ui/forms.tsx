@@ -265,7 +265,6 @@ export function CheckboxField({
           }}
           type="button"
         />
-        {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
         <label
           htmlFor={id}
           {...labelProps}

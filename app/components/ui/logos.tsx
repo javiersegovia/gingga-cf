@@ -1,7 +1,6 @@
 interface LogoProps extends React.ImgHTMLAttributes<HTMLImageElement> {}
 
 export const Logo: React.FC<LogoProps> = (props) => {
-  // biome-ignore lint/a11y/useAltText: <explanation>
   return (
     <img
       src="/assets/img/logo/logo-dark.svg"

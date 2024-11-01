@@ -113,7 +113,7 @@
   }
   body {
     --removed-body-scroll-bar-size: 0px !important;
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-sans;
   }
 
   html body[data-scroll-locked] {

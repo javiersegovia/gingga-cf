@@ -42,7 +42,6 @@ export function FAQSection() {
               {faqItems.map((item, index) => (
                 <AccordionItem
                   value={`item-${index}`}
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                   key={index}
                   className="overflow-hidden"
                 >

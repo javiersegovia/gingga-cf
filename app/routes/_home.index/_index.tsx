@@ -10,6 +10,7 @@ import type { MetaFunction } from '@remix-run/cloudflare'
 import { EstimateProjectSection } from './estimate-section'
 import { Particles } from '@/components/ui/particles'
 import { Suspense } from 'react'
+import { GlobeSection } from './globe-section'
 
 export const meta: MetaFunction = () => {
   return [
@@ -22,16 +23,20 @@ export const meta: MetaFunction = () => {
 export default function Home() {
   return (
     <div className="bg-black relative min-h-screen min-w-screen">
-      <Particles
-        className="inset-0 fixed min-h-screen min-w-screen"
-        quantity={400}
-        ease={20}
-        color="#ffffff"
-        refresh
-      />
+      <div className="absolute">
+        <Particles
+          className="inset-0 fixed  min-h-screen min-w-screen"
+          quantity={400}
+          ease={20}
+          color="#ffffff"
+          refresh
+        />
+      </div>
 
       <Navbar />
+
       <HeroSection />
+
       {/* <MethodologySection /> */}
       <Spacer size="4xs" />
       <FeaturesSection />

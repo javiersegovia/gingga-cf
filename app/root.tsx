@@ -1,4 +1,8 @@
-import { captureRemixErrorBoundaryError, withSentry } from '@sentry/remix'
+import {
+  browserTracingIntegration,
+  captureRemixErrorBoundaryError,
+  withSentry,
+} from '@sentry/remix'
 import {
   Links,
   Meta,
@@ -6,6 +10,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
+  useMatches,
   useRouteError,
 } from '@remix-run/react'
 
@@ -40,6 +46,13 @@ import { ProgressBar } from './components/ui/progress-bar'
 import { Toaster } from './components/ui/toaster'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { GeneralErrorBoundary } from './components/error-boundary'
+
+import {
+  // browserProfilingIntegration,
+  // browserTracingIntegration,
+  // replayIntegration,
+  init as sentryInit,
+} from '@sentry/remix'
 
 export const links: LinksFunction = () => {
   return [
@@ -222,6 +235,46 @@ function App() {
       </QueryClientProvider>
     </Document>
   )
+}
+
+export const ClientLoader = () => {
+  sentryInit({
+    dsn: 'https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184',
+    environment: 'production',
+    beforeSend(event) {
+      if (event.request?.url) {
+        const url = new URL(event.request.url)
+        if (
+          url.protocol === 'chrome-extension:' ||
+          url.protocol === 'moz-extension:'
+        ) {
+          // This error is from a browser extension, ignore it
+          return null
+        }
+      }
+      return event
+    },
+    integrations: [
+      browserTracingIntegration({
+        useEffect,
+        useLocation,
+        useMatches,
+      }),
+      // replayIntegration(),
+      // browserProfilingIntegration(),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+
+    // Capture Replay for 10% of all sessions,
+    // plus for 100% of sessions with an error
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  })
+  return null
 }
 
 function AppWithProviders() {

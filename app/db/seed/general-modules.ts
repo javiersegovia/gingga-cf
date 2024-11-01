@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { AppLoadContext } from '@remix-run/cloudflare'
 import { GeneralModules } from '../schema'
+import { db } from '.'
 
 const generalModules = [
   {
@@ -231,7 +232,7 @@ const generalModules = [
   },
 ]
 
-export async function seedGeneralModules(db: AppLoadContext['db']) {
+export async function seedGeneralModules() {
   console.time('📦 Created general modules...')
 
   const generalModulesToCreate = generalModules.map((module) => ({

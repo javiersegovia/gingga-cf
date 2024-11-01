@@ -3,8 +3,9 @@ import { eq, sql } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { faker } from '@faker-js/faker'
 import { AppLoadContext } from '@remix-run/cloudflare'
+import { db } from '.'
 
-export async function cleanupDb(db: AppLoadContext['db']) {
+export async function cleanupDb() {
   const query = sql<string>`SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = 'public'
@@ -26,15 +27,12 @@ export function createPassword(password: string) {
   return bcrypt.hash(password, 10)
 }
 
-export async function createUser(
-  db: AppLoadContext['db'],
-  userData?: {
-    email?: string
-    firstName?: string
-    lastName?: string
-    password?: string
-  },
-) {
+export async function createUser(userData?: {
+  email?: string
+  firstName?: string
+  lastName?: string
+  password?: string
+}) {
   const email = userData?.email ?? faker.internet.email()
   const firstName = userData?.firstName ?? faker.person.firstName()
   const lastName = userData?.lastName ?? faker.person.lastName()
@@ -62,7 +60,7 @@ export async function createUser(
   return user
 }
 
-export async function getUserByEmail(db: AppLoadContext['db'], email: string) {
+export async function getUserByEmail(email: string) {
   return db.query.Users.findFirst({
     where: eq(Users.email, email),
   })

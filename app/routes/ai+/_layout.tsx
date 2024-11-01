@@ -20,6 +20,7 @@ export default function AILayout() {
       <FlickeringGrid />
 
       <Sidebar projects={projects} />
+
       <main className="flex-1 overflow-auto z-10">
         <Outlet />
       </main>

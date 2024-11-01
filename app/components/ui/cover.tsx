@@ -19,7 +19,6 @@ export const Cover = ({
   const [containerWidth, setContainerWidth] = useState(0)
   const [beamPositions, setBeamPositions] = useState<number[]>([])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     if (ref.current) {
       setContainerWidth(ref.current?.clientWidth ?? 0)
@@ -39,7 +38,7 @@ export const Cover = ({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       ref={ref}
-      className="relative hover:bg-black group/cover inline-block bg-gray-950 p-4 transition duration-200 rounded-lg border border-gray-800"
+      className="relative hover:bg-black group/cover inline-block bg-white/[.05] py-6 px-16 transition duration-150 rounded-lg border border-gray-800"
     >
       <AnimatePresence>
         {hovered && (

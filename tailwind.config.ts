@@ -9,6 +9,8 @@ export default {
       fontFamily: {
         title: 'Space Grotesk',
         body: 'Space Grotesk',
+        mono: 'GeistMono',
+        sans: 'Geist',
       },
       aria: {
         invalid: 'invalid="true"',

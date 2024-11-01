@@ -1,5 +1,5 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-// import type { PlatformProxy } from 'wrangler'
+import { drizzle } from 'drizzle-orm/neon-http'
+import { neon } from '@neondatabase/serverless'
 import * as schema from '@/db/schema'
 import { Context } from 'hono'
 import type { SecureHeadersVariables } from 'hono/secure-headers'

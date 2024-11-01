@@ -3,7 +3,7 @@ import { Spacer } from '@/components/ui/spacer'
 import { cn } from '@/core/utils'
 import { GinggaCTA } from './estimate-section'
 import { Cover } from '@/components/ui/cover'
-import { P } from '@/components/ui/typography'
+import { H1, P } from '@/components/ui/typography'
 
 export function HighlightedText({
   children,
@@ -15,7 +15,7 @@ export function HighlightedText({
   return (
     <span
       className={cn(
-        'bg-clip-text text-transparent bg-gradient-to-b from-white via-yellow-300 to-lime-700 from-40% via-60% to-100%',
+        'bg-clip-text text-transparent bg-gradient-to-b from-lime-300 to-yellow-500 from-0% to-100%',
         className,
       )}
     >
@@ -27,16 +27,13 @@ export function HighlightedText({
 export function HeroSection() {
   return (
     <section className="text-center mt-24 py-28 px-4 text-gray-200">
-      {/* <Text variant="h1" className="leading-normal mb-4 text-white">
-        Accelerating software <br />
-        From concept to production
-      </Text> */}
-
       <div>
-        <h1 className="text-4xl md:text-4xl lg:text-6xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-white via-yellow-300 to-lime-700 from-40% via-60% to-100%">
-          <Cover>Accelerating software</Cover> <br />
-          from day zero to launch
-        </h1>
+        <H1 className="text-4xl md:text-4xl lg:text-6xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6">
+          <Cover className="text-6xl">Accelerating tech</Cover> <br />
+          <span className="pt-4 block bg-clip-text text-transparent bg-gradient-to-b from-lime-300 to-yellow-500 from-0% to-100%">
+            from zero to market
+          </span>
+        </H1>
       </div>
 
       <Spacer size="4xs" />
@@ -58,7 +55,7 @@ export function HeroSection() {
         <Button
           size="2xl"
           variant="ghost"
-          className="from-white to-slate-400 hover:text-white hover:border-gray-800 text-transparent bg-clip-text bg-gradient-to-b animate-gradient"
+          className="from-white to-slate-200 font-semibold hover:text-white hover:border-gray-800 text-transparent bg-clip-text bg-gradient-to-b animate-gradient"
         >
           Get in touch
         </Button>

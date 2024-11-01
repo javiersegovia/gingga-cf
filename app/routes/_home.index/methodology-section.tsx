@@ -75,7 +75,6 @@ export function MethodologySection() {
             <div className="w-1/2">
               <ul className="space-y-4">
                 {steps.map((step) => (
-                  // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
                   <li
                     key={step.name}
                     className={`cursor-pointer ${activeStep?.name === step.name ? step.color : 'text-gray-400'}`}
@@ -89,7 +88,6 @@ export function MethodologySection() {
 
             <div className="w-1/2 flex justify-center items-center">
               <div className={activeStep?.color}>
-                {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -110,7 +108,6 @@ export function MethodologySection() {
 
           <div className="mt-8 space-y-4">
             {activeStep.description.map((paragraph, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
               <p key={index} className="text-gray-600">
                 {paragraph}
               </p>
