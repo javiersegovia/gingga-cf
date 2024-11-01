@@ -9,7 +9,7 @@ import * as schema from '../schema'
 const db = drizzle(process.env.DATABASE_URL!, { schema })
 
 async function seed() {
-  console.log('🌱 Seeding...')
+  console.info('🌱 Seeding...')
   console.time('🌱 Database has been seeded')
 
   console.time('🧹 Cleaned up the database...')

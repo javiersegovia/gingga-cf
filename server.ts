@@ -8,10 +8,15 @@ import type { ContextEnv } from './load-context'
 
 import { drizzle } from 'drizzle-orm/postgres-js'
 import * as schema from '@/db/schema'
+import { sentry } from '@hono/sentry'
 
 const app = new Hono<ContextEnv>()
-
 let handler: RequestHandler | undefined
+
+app.use('*', (c, next) => {
+  c.set('db', drizzle(c.env.DATABASE_URL, { schema }))
+  return next()
+})
 
 app.use(
   '*',
@@ -34,8 +39,34 @@ app.use(
   }),
 )
 
+app.use(
+  '*',
+  sentry({
+    tracesSampleRate: 1,
+    denyUrls: ['/resources/healthcheck', '/assets/*'],
+    tracesSampler(samplingContext) {
+      // ignore healthcheck transactions by other services (consul, etc.)
+      if (samplingContext.request?.url?.includes('/resources/healthcheck')) {
+        return 0
+      }
+      return 1
+    },
+    beforeSendTransaction(event, hint) {
+      // ignore all healthcheck related transactions
+      //  note that name of header here is case-sensitive
+      const isHealthcheck = event.request?.headers?.['x-healthcheck'] === 'true'
+      return isHealthcheck ? null : event
+    },
+  }),
+)
+
+app.get('/resources/healthcheck', (c) => {
+  // todo: check if we can connect to the database
+  return c.text('ok')
+})
+
 app.use(async (c, next) => {
-  const db = drizzle(c.env.DATABASE_URL, { schema })
+  const db = c.get('db')
 
   if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
     const serverBuild = await import('./build/server')

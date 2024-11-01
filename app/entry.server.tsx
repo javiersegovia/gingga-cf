@@ -10,6 +10,7 @@ import { isbot } from 'isbot'
 import { renderToReadableStream } from 'react-dom/server'
 import { NonceProvider } from '@/core/nonce-provider'
 
+// https://remix.run/docs/en/main/guides/single-fetch#streaming-timeout
 const ABORT_DELAY = 5000
 
 export default async function handleRequest(
@@ -22,8 +23,6 @@ export default async function handleRequest(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loadContext: AppLoadContext,
 ) {
-  console.log({ nonceFromEntry: loadContext.cloudflare.nonce })
-
   const nonce = loadContext.cloudflare.nonce ?? ''
 
   let didError = false
@@ -31,9 +30,15 @@ export default async function handleRequest(
 
   const body = await renderToReadableStream(
     <NonceProvider value={nonce}>
-      <RemixServer context={remixContext} url={request.url} />
+      <RemixServer
+        context={remixContext}
+        url={request.url}
+        abortDelay={ABORT_DELAY}
+        nonce={nonce}
+      />
     </NonceProvider>,
     {
+      nonce,
       signal: request.signal,
       onError(error: unknown) {
         // Log streaming rendering errors from inside the shell

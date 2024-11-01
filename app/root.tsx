@@ -1,3 +1,4 @@
+import { captureRemixErrorBoundaryError, withSentry } from '@sentry/remix'
 import {
   Links,
   Meta,
@@ -5,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useRouteError,
 } from '@remix-run/react'
 
 import {
@@ -37,29 +39,10 @@ import { getHints } from './core/client-hints'
 import { ProgressBar } from './components/ui/progress-bar'
 import { Toaster } from './components/ui/toaster'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
+import { GeneralErrorBoundary } from './components/error-boundary'
 
 export const links: LinksFunction = () => {
   return [
-    {
-      rel: 'apple-touch-icon',
-      href: '/assets/img/favicon/apple-touch-icon.png',
-    },
-    {
-      rel: 'icon',
-      type: 'image/png',
-      sizes: '32x32',
-      href: '/assets/img/favicon/favicon-32x32.png',
-    },
-    {
-      rel: 'icon',
-      type: 'image/png',
-      sizes: '16x16',
-      href: '/assets/img/favicon/favicon-16x16.png',
-    },
-    {
-      rel: 'icon',
-      href: '/favicon.ico',
-    },
     {
       rel: 'stylesheet',
       href: tailwindStyleSheetUrl,
@@ -151,6 +134,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           theme: getTheme(request),
         },
       },
+      sentry: {
+        dsn: context.cloudflare.env.SENTRY_DSN,
+        mode: context.cloudflare.env.NODE_ENV,
+      },
       toast,
       honeyProps,
     },
@@ -199,8 +186,6 @@ function App() {
   const nonce = useNonce()
   const { toast } = useToast()
 
-  console.log({ nonce })
-
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -243,4 +228,10 @@ function AppWithProviders() {
   )
 }
 
-export default AppWithProviders
+export const ErrorBoundary = () => {
+  const error = useRouteError()
+  captureRemixErrorBoundaryError(error)
+  return <GeneralErrorBoundary />
+}
+
+export default withSentry(AppWithProviders)

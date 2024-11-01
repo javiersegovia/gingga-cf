@@ -1,9 +1,11 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import devServer, { defaultOptions } from '@hono/vite-dev-server'
 import adapter from '@hono/vite-dev-server/cloudflare'
 import { vitePlugin as remix } from '@remix-run/dev'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { flatRoutes } from 'remix-flat-routes'
+import { config } from 'dotenv'
 
 declare module '@remix-run/cloudflare' {
   interface Future {
@@ -15,15 +17,21 @@ declare module '@remix-run/cloudflare' {
   }
 }
 
+config({ path: '.dev.vars' })
+
 export default defineConfig({
   build: {
     minify: true,
-    cssMinify: true,
+    cssMinify: process.env.NODE_ENV === 'production',
+    sourcemap: true,
   },
   ssr: {
     resolve: {
       externalConditions: ['workerd', 'worker'],
     },
+  },
+  server: {
+    port: 3000,
   },
   plugins: [
     remix({
@@ -61,5 +69,21 @@ export default defineConfig({
       exclude: [...defaultOptions.exclude, '/assets/**', '/app/**'],
       injectClientScript: false,
     }),
+
+    process.env.SENTRY_AUTH_TOKEN
+      ? sentryVitePlugin({
+          // todo: uncomment this
+          // disable: process.env.MODE !== 'production',
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+          org: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT,
+          release: {
+            name: process.env.COMMIT_SHA,
+            setCommits: {
+              auto: true,
+            },
+          },
+        })
+      : null,
   ],
 })

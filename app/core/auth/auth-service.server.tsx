@@ -39,7 +39,7 @@ export class AuthService {
     }
 
     if (this.ctx.cloudflare.env.NODE_ENV === 'development') {
-      console.log(`Login code: ${otp} - Magic link: ${verifyUrl.toString()}`)
+      console.info(`Login code: ${otp} - Magic link: ${verifyUrl.toString()}`)
     }
 
     return { error: response.error }
