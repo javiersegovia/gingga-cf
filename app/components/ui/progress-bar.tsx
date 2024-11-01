@@ -37,7 +37,7 @@ export function ProgressBar() {
       <div
         ref={ref}
         className={cn(
-          'h-full w-0 bg-black duration-500 ease-in-out',
+          'h-full w-0 bg-white duration-500 ease-in-out',
           transition.state === 'idle' &&
             (animationComplete
               ? 'transition-none'

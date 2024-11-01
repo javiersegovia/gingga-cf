@@ -5,21 +5,22 @@ import { remix } from 'remix-hono/handler'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
+import { Client, neonConfig } from '@neondatabase/serverless'
 
-import { drizzle } from 'drizzle-orm/postgres-js'
+import { drizzle } from 'drizzle-orm/neon-serverless'
+import ws from 'ws'
 
 import * as schema from '@/db/schema'
 import { sentry } from '@hono/sentry'
+neonConfig.webSocketConstructor = ws
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
 
-let db: any
-
 app.use('*', async (c, next) => {
-  if (!db) {
-    db = drizzle(c.env.DATABASE_URL, { schema })
-  }
+  const client = new Client(c.env.DATABASE_URL)
+  await client.connect()
+  const db = drizzle(client, { schema })
 
   c.set('db', db)
   await next()

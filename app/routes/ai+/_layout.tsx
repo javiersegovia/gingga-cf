@@ -6,10 +6,15 @@ import { useLoaderData } from '@remix-run/react'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { FlickeringGrid } from '@/components/ui/flickering-grid'
 import { Projects } from '@/db/schema'
+import { ProjectService } from '@/.server/services/project-service'
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  await requireUserId(request, context)
-  return json({ projects: [] as (typeof Projects.$inferSelect)[] })
+  const userId = await requireUserId(request, context)
+
+  const { getProjects } = new ProjectService(context.db)
+  const projects = await getProjects(userId)
+
+  return json({ projects })
 }
 
 export default function AILayout() {
