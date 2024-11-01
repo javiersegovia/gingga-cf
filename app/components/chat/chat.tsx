@@ -7,14 +7,15 @@ import { Textarea } from '../ui/textarea'
 
 export function Chat() {
   const { projectId } = useParams()
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: '/api/chat',
-    streamProtocol: 'data',
-    body: { projectId },
-    onToolCall() {},
-    onResponse() {},
-    onError() {},
-  })
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useChat({
+      api: '/api/chat',
+      streamProtocol: 'data',
+      body: { projectId },
+      onToolCall() {},
+      onResponse() {},
+      onError() {},
+    })
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -52,7 +53,11 @@ export function Chat() {
             disabled={isLoading}
             className="bg-gray-950 text-gray-400 mt-4 mr-4 h-12 w-12 rounded-xl border-gray-800 border font-bold flex items-center justify-center"
           >
-            {isLoading ? <Loader2 className="animate-spin" /> : <Send className="w-5 h-5" />}
+            {isLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </button>
         </div>
       </Form>

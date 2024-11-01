@@ -13,6 +13,7 @@ import ws from 'ws'
 import * as schema from '@/db/schema'
 import { sentry } from '@hono/sentry'
 import { config } from 'dotenv'
+
 neonConfig.webSocketConstructor = ws
 
 const app = new Hono<ContextEnv>()
@@ -29,16 +30,19 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-app.use(
-  '*',
-  secureHeaders({
+console.log('~~~~~~~~~~~~~~ process.env.SENTRY_DSN')
+console.log(process.env.SENTRY_DSN)
+console.log(process.env.NODE_ENV)
+
+app.use('*', async (c, next) => {
+  return secureHeaders({
     referrerPolicy: 'same-origin',
     removePoweredBy: true,
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicyReportOnly: {
       connectSrc: [
-        process.env.NODE_ENV === 'development' ? 'ws:' : null,
-        process.env.SENTRY_DSN ? '*.sentry.io' : undefined,
+        c.env.NODE_ENV === 'development' ? 'ws:' : null,
+        '*.sentry.io',
         "'self'",
       ].filter(Boolean) as string[],
       fontSrc: ["'self'"],
@@ -47,8 +51,8 @@ app.use(
       scriptSrcAttr: [NONCE],
       scriptSrc: ["'strict-dynamic'", "'self'", NONCE],
     },
-  }),
-)
+  })(c, next)
+})
 
 app.use(
   '*',
@@ -62,7 +66,7 @@ app.use(
       }
       return 1
     },
-    beforeSendTransaction(event, hint) {
+    beforeSendTransaction(event) {
       // ignore all healthcheck related transactions
       //  note that name of header here is case-sensitive
       const isHealthcheck = event.request?.headers?.['x-healthcheck'] === 'true'

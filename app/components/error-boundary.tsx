@@ -44,7 +44,6 @@ export function GeneralErrorBoundary({
   const params = useParams()
 
   if (typeof document !== 'undefined') {
-    // eslint-disable-next-line no-console
     console.error(error)
   }
 

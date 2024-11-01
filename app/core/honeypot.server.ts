@@ -9,7 +9,6 @@ export function checkHoneypot(formData: FormData) {
   try {
     honeypot.check(formData)
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Honeypot error:', error)
     if (error instanceof SpamError) {
       throw new Response('Form not submitted properly', { status: 400 })

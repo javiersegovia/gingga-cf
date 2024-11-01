@@ -1,7 +1,7 @@
-import {
-  json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+import { json } from '@remix-run/cloudflare'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
 } from '@remix-run/cloudflare'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { generateProjectTimeline } from '@/.server/ai/generate-project-timeline'
@@ -36,7 +36,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   try {
-    const timeline = await generateProjectTimeline(context.db, projectId)
+    const timeline = await generateProjectTimeline(context, projectId)
     return json({ timeline })
   } catch (error) {
     console.error('Timeline generation error:', error)

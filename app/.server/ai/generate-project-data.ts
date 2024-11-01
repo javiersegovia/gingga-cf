@@ -1,5 +1,6 @@
 import { ProjectModuleSchema } from '@/schemas/project-schema'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
+import { AppLoadContext } from '@remix-run/cloudflare'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 
@@ -33,7 +34,9 @@ When analyzing the project description, you should:
 
 Your responses should reflect a thoughtful reasoning process, providing a logical sequence of steps to achieve the MVP. This will facilitate comprehensive software development planning.`
 
-export const generateProjectDataPrompt = (projectIdeaDescription: string) => `Analyze the following product description provided by the user, which outlines a software development project for a website or web application:
+export const generateProjectDataPrompt = (
+  projectIdeaDescription: string,
+) => `Analyze the following product description provided by the user, which outlines a software development project for a website or web application:
 
 ${projectIdeaDescription}
 
@@ -101,7 +104,11 @@ From this description, please extract and provide comprehensive information focu
 Present the extracted information in a clear and organized format to facilitate detailed roadmap planning for software development.`
 
 export const ProjectWithMetadataSchema = z.object({
-  name: z.string().describe('The unique identifier or title of the project. Should be concise and descriptive.'),
+  name: z
+    .string()
+    .describe(
+      'The unique identifier or title of the project. Should be concise and descriptive.',
+    ),
   description: z
     .string()
     .describe(
@@ -114,7 +121,9 @@ export const ProjectWithMetadataSchema = z.object({
     ),
   mainObjective: z
     .string()
-    .describe('The primary technical goal or core purpose of the project from a technical perspective.'),
+    .describe(
+      'The primary technical goal or core purpose of the project from a technical perspective.',
+    ),
   metadata: z
     .record(z.string(), z.any())
     .nullable()
@@ -124,9 +133,16 @@ export const ProjectWithMetadataSchema = z.object({
   modules: z.array(ProjectModuleSchema.omit({ id: true })),
 })
 
-export const generateProjectData = async (productIdea: string) => {
+export const generateProjectData = async (
+  env: AppLoadContext['cloudflare']['env'],
+  productIdea: string,
+) => {
+  const aiClient = createOpenAI({
+    apiKey: env.OPENAI_API_KEY,
+  })
+
   const { object: projectData } = await generateObject({
-    model: openai('gpt-4o-mini'),
+    model: aiClient('gpt-4o-mini'),
     prompt: generateProjectDataPrompt(productIdea),
     system: systemPrompt,
     schema: ProjectWithMetadataSchema,

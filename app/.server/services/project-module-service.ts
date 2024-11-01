@@ -15,7 +15,11 @@ import type {
 import { AppLoadContext } from '@remix-run/cloudflare'
 
 export class ProjectModuleService {
-  constructor(private db: AppLoadContext['db']) {}
+  db: AppLoadContext['db']
+
+  constructor(private context: AppLoadContext) {
+    this.db = context.db
+  }
 
   public createProjectModules = async (
     projectId: string,
@@ -23,7 +27,7 @@ export class ProjectModuleService {
   ) => {
     const { mainObjective, metadata } = data
 
-    const projectModules = await generateProjectModules(this.db, {
+    const projectModules = await generateProjectModules(this.context, {
       mainObjective,
       metadata,
     })

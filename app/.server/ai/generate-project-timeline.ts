@@ -4,7 +4,7 @@ import {
   TimelineItemsToProjectModules,
 } from '@/db/schema'
 import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { AppLoadContext } from '@remix-run/cloudflare'
 
@@ -257,9 +257,11 @@ const ProjectTimelineSchema = z.object({
 })
 
 export async function generateProjectTimeline(
-  db: AppLoadContext['db'],
+  context: AppLoadContext,
   projectId: string,
 ) {
+  const { db, cloudflare } = context
+
   const project = await db.query.Projects.findFirst({
     where: (p, { eq }) => eq(p.id, projectId),
     columns: {
@@ -343,9 +345,13 @@ export async function generateProjectTimeline(
     timelineData,
   })
 
+  const aiClient = createOpenAI({
+    apiKey: context.cloudflare.env.OPENAI_API_KEY,
+  })
+
   // Call the AI model
   const { object: projectTimeline } = await generateObject({
-    model: openai('gpt-4o'),
+    model: aiClient('gpt-4o'),
     prompt: userPrompt,
     system: systemPrompt,
     output: 'object',

@@ -1,17 +1,15 @@
-import { Outlet } from '@remix-run/react'
+import { Outlet, useLoaderData } from '@remix-run/react'
 import { Sidebar } from '@/components/sidebar'
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare'
 import { json } from '@remix-run/cloudflare'
-import { useLoaderData } from '@remix-run/react'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { FlickeringGrid } from '@/components/ui/flickering-grid'
-import { Projects } from '@/db/schema'
 import { ProjectService } from '@/.server/services/project-service'
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const userId = await requireUserId(request, context)
 
-  const { getProjects } = new ProjectService(context.db)
+  const { getProjects } = new ProjectService(context)
   const projects = await getProjects(userId)
 
   return json({ projects })

@@ -7,8 +7,8 @@ import { ProjectUpdateSchema } from '@/schemas/project-schema'
 import {
   useProjectQuery,
   useProjectMutation,
-  type GetProjectResponse,
 } from '@/queries/use-project-query'
+import type { GetProjectResponse } from '@/queries/use-project-query'
 import { Button } from '@/components/ui/button'
 import { StatusButton } from '@/components/ui/status-button'
 import { Textarea } from '@/components/ui/textarea'

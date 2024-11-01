@@ -1,7 +1,7 @@
-import {
-  json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+import { json } from '@remix-run/cloudflare'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
 } from '@remix-run/cloudflare'
 import { ProjectService } from '@/.server/services/project-service'
 import { ProjectUpdateSchema } from '@/schemas/project-schema'
@@ -15,9 +15,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     throw new Error('Project ID is required')
   }
 
-  const { getProjectWithModules, getProjectStats } = new ProjectService(
-    context.db,
-  )
+  const { getProjectWithModules, getProjectStats } = new ProjectService(context)
 
   const project = await getProjectWithModules(projectId)
 
@@ -42,7 +40,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
     return json({ error: 'Project ID is required' }, { status: 400 })
   }
 
-  const { updateProject, deleteProject } = new ProjectService(context.db)
+  const { updateProject, deleteProject } = new ProjectService(context)
 
   if (request.method.toUpperCase() === 'PUT') {
     const data = await request.json()

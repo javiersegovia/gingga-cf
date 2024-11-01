@@ -2,7 +2,6 @@ import { Navbar } from '@/components/navbar'
 import { FAQSection } from './faq-section'
 import { FeaturesSection } from './features-section'
 import { HeroSection } from './hero-section'
-// import { MethodologySection } from './methodology-section'
 import { PricingSection } from './pricing-section'
 
 import { Spacer } from '@/components/ui/spacer'
@@ -10,7 +9,6 @@ import type { MetaFunction } from '@remix-run/cloudflare'
 import { EstimateProjectSection } from './estimate-section'
 import { Particles } from '@/components/ui/particles'
 import { Suspense } from 'react'
-import { GlobeSection } from './globe-section'
 
 export const meta: MetaFunction = () => {
   return [

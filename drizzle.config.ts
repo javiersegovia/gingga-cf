@@ -1,4 +1,4 @@
-import { Config, defineConfig } from 'drizzle-kit'
+import { defineConfig } from 'drizzle-kit'
 
 export default defineConfig({
   out: './app/db/drizzle',

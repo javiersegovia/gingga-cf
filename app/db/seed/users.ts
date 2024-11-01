@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { createUser } from './utils'
 import { UserRoles, Roles } from '../schema'
 import { eq } from 'drizzle-orm'

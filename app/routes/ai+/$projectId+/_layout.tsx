@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { cn } from '@/core/utils'
 import { invariantResponse } from '@epic-web/invariant'
-import { type LoaderFunctionArgs, json } from '@remix-run/cloudflare'
+import { json } from '@remix-run/cloudflare'
+import type { LoaderFunctionArgs } from '@remix-run/cloudflare'
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react'
 import { CircleGaugeIcon, PhoneIcon, Undo2Icon } from 'lucide-react'
 import {
@@ -20,7 +21,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const projectId = params.projectId
   invariantResponse(projectId, 'Project ID is required', { status: 400 })
 
-  const { getProjects } = new ProjectService(context.db)
+  const { getProjects } = new ProjectService(context)
 
   const projects = await getProjects(userId)
 

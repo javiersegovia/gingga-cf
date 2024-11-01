@@ -1,8 +1,9 @@
 import { requireUserId } from '@/core/auth/auth-utils.server'
-import { type ActionFunctionArgs, json } from '@remix-run/cloudflare'
+import { json } from '@remix-run/cloudflare'
+import type { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { convertToCoreMessages, streamText, tool } from 'ai'
 import { z } from 'zod'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 
 const systemPrompt = `
 You are an AI assistant specialized in software development and project management.
@@ -97,8 +98,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return json({ error: 'Project not found' }, { status: 404 })
   }
 
+  const aiClient = createOpenAI({
+    apiKey: context.cloudflare.env.OPENAI_API_KEY,
+  })
+
   const result = await streamText({
-    model: openai('gpt-3.5-turbo'),
+    model: aiClient('gpt-3.5-turbo'),
     abortSignal: request.signal,
     system: systemPrompt,
     tools: {

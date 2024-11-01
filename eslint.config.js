@@ -90,7 +90,7 @@ export default [
         {
           devDependencies: true,
           peerDependencies: true,
-          projectDependencies: false,
+          bundledDependencies: false,
           optionalDependencies: true,
           packageDir: './',
         },

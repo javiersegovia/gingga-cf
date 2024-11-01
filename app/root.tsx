@@ -2,6 +2,11 @@ import {
   browserTracingIntegration,
   captureRemixErrorBoundaryError,
   withSentry,
+
+  // browserProfilingIntegration,
+  // browserTracingIntegration,
+  // replayIntegration,
+  init as sentryInit,
 } from '@sentry/remix'
 import {
   Links,
@@ -46,13 +51,6 @@ import { ProgressBar } from './components/ui/progress-bar'
 import { Toaster } from './components/ui/toaster'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { GeneralErrorBoundary } from './components/error-boundary'
-
-import {
-  // browserProfilingIntegration,
-  // browserTracingIntegration,
-  // replayIntegration,
-  init as sentryInit,
-} from '@sentry/remix'
 
 export const links: LinksFunction = () => {
   return [

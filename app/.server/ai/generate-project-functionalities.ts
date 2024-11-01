@@ -1,11 +1,8 @@
-import {
-  ProjectFunctionalities,
-  projectFunctionalityType,
-  type ProjectModules,
-} from '@/db/schema'
+import { ProjectFunctionalities, projectFunctionalityType } from '@/db/schema'
+import type { ProjectModules } from '@/db/schema'
 import type { ProjectWithModules } from '@/.server/services/project-service'
 import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { AppLoadContext } from '@remix-run/cloudflare'
 
@@ -121,7 +118,7 @@ const ProjectFunctionalitySchema = z.object({
 })
 
 export async function generateFunctionalitiesByProjectModuleId(
-  db: AppLoadContext['db'],
+  context: AppLoadContext,
   project: Pick<
     ProjectWithModules,
     'id' | 'description' | 'mainObjective' | 'metadata'
@@ -142,8 +139,14 @@ export async function generateFunctionalitiesByProjectModuleId(
     },
   })
 
+  const { db, cloudflare } = context
+
+  const aiClient = createOpenAI({
+    apiKey: cloudflare.env.OPENAI_API_KEY,
+  })
+
   const { object: projectFunctionalities } = await generateObject({
-    model: openai('gpt-4o-mini'),
+    model: aiClient('gpt-4o-mini'),
     prompt: userPrompt,
     system: systemPrompt,
     output: 'array',

@@ -1,4 +1,5 @@
-import { json, type ActionFunctionArgs } from '@remix-run/cloudflare'
+import { json } from '@remix-run/cloudflare'
+import type { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { ProjectFunctionalityService } from '@/.server/services/project-functionality-service'
 import { z } from 'zod'
@@ -26,9 +27,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
 
     const { moduleId } = result.data
 
-    const { generateFunctionalities } = new ProjectFunctionalityService(
-      context.db,
-    )
+    const { generateFunctionalities } = new ProjectFunctionalityService(context)
 
     const generatedFunctionalities = await generateFunctionalities({
       projectId,

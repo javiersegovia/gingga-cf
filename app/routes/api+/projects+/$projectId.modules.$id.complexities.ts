@@ -1,9 +1,9 @@
-import { json, type ActionFunctionArgs } from '@remix-run/cloudflare'
+import { json } from '@remix-run/cloudflare'
+import type { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { eq } from 'drizzle-orm'
-import { ProjectModules } from '@/db/schema'
+import { ProjectModules, ModuleTime } from '@/db/schema'
 import { generateComplexityMetrics } from '@/.server/ai/generate-complexity-metrics'
-import { ModuleTime } from '@/db/schema'
 import { ProjectModuleService } from '@/.server/services/project-module-service'
 
 export async function action({ request, params, context }: ActionFunctionArgs) {
@@ -35,14 +35,14 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
 
     await Promise.all(
       projectModule.functionalities.map(async (functionality) => {
-        await generateComplexityMetrics(context.db, {
+        await generateComplexityMetrics(context, {
           projectFunctionality: functionality,
           projectModule,
         })
       }),
     )
 
-    const { calculateModuleMetrics } = new ProjectModuleService(context.db)
+    const { calculateModuleMetrics } = new ProjectModuleService(context)
     const { estimatedHours, complexityMetricScore } =
       await calculateModuleMetrics(moduleId)
 

@@ -3,7 +3,8 @@ import { TextareaField } from '@/components/ui/forms'
 import { FormStatusButton } from '@/components/ui/status-button'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { getZodConstraint, parseWithZod } from '@conform-to/zod'
-import { type ActionFunctionArgs, json, redirect } from '@remix-run/cloudflare'
+import { json, redirect } from '@remix-run/cloudflare'
+import type { ActionFunctionArgs } from '@remix-run/cloudflare'
 import { Form, useActionData } from '@remix-run/react'
 import { FormProvider, useForm } from '@conform-to/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
@@ -32,7 +33,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     )
   }
 
-  const { createProject } = new ProjectService(context.db)
+  const { createProject } = new ProjectService(context)
   const project = await createProject(userId, submission.value.projectIdea)
 
   return redirect(`/ai/${project.id}/chat`)
@@ -98,7 +99,7 @@ export default function GinggaLandingPage() {
             <FormStatusButton
               type="submit"
               variant="secondary"
-              className="w-auto mx-auto"
+              className="w-auto mx-auto bg-gray-700"
               size="xl"
             >
               Start generation

@@ -9,7 +9,11 @@ import type {
 import { AppLoadContext } from '@remix-run/cloudflare'
 
 export class ProjectFunctionalityService {
-  constructor(private db: AppLoadContext['db']) {}
+  db: AppLoadContext['db']
+
+  constructor(private context: AppLoadContext) {
+    this.db = context.db
+  }
 
   public getFunctionalityById = async (id: string) => {
     return this.db.query.ProjectFunctionalities.findFirst({
@@ -168,7 +172,7 @@ export class ProjectFunctionalityService {
 
     const generatedFunctionalities =
       await generateFunctionalitiesByProjectModuleId(
-        this.db,
+        this.context,
         project,
         projectModule,
       )

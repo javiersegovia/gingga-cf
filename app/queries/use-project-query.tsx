@@ -8,12 +8,8 @@ import type {
   UpdateProjectModule,
   UpdateFunctionality,
 } from '@/schemas/project-schema'
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseQueryOptions,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { UseQueryOptions } from '@tanstack/react-query'
 
 const getProject = async (projectId: string) => {
   const response = await fetch(`/api/projects/${projectId}`)

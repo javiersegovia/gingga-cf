@@ -1,13 +1,15 @@
 import {
   ComplexityAssessmentCriteria,
-  type ProjectModules,
-  type ProjectFunctionalities,
   complexityAssessmentCriterionType,
-  type ComplexityAssessmentCriterionType,
   FunctionalityTime,
 } from '@/db/schema'
+import type {
+  ProjectModules,
+  ProjectFunctionalities,
+  ComplexityAssessmentCriterionType,
+} from '@/db/schema'
 import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { z } from 'zod'
 import { AppLoadContext } from '@remix-run/cloudflare'
 
@@ -170,7 +172,7 @@ type ComplexityMetricsArgs = {
 }
 
 export async function generateComplexityMetrics(
-  db: AppLoadContext['db'],
+  context: AppLoadContext,
   { projectFunctionality, projectModule }: ComplexityMetricsArgs,
 ) {
   const prompt = complexityAssessmentPrompt({
@@ -178,8 +180,17 @@ export async function generateComplexityMetrics(
     projectModule,
   })
 
+  const {
+    db,
+    cloudflare: { env },
+  } = context
+
+  const aiClient = createOpenAI({
+    apiKey: env.OPENAI_API_KEY,
+  })
+
   const { object: assessment } = await generateObject({
-    model: openai('gpt-4o-mini'),
+    model: aiClient('gpt-4o-mini'),
     schema: AssessmentSchema,
     prompt,
   })
@@ -195,6 +206,14 @@ export async function generateComplexityMetrics(
         complexityMetricScore: complexityScore,
         complexityExplanation: explanation,
         estimatedHours,
+      })
+      .onConflictDoUpdate({
+        target: [FunctionalityTime.projectFunctionalityId],
+        set: {
+          complexityMetricScore: complexityScore,
+          complexityExplanation: explanation,
+          estimatedHours,
+        },
       })
       .returning({ id: FunctionalityTime.id })
 

@@ -1,5 +1,5 @@
 import type { GeneralModules } from '@/db/schema'
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { generateObject } from 'ai'
 import { ProjectModuleSchema } from '@/schemas/project-schema'
 import { AppLoadContext } from '@remix-run/cloudflare'
@@ -78,7 +78,7 @@ Your goal is to ensure that all aspects pertinent to the software development li
 </instructions>`
 
 export async function generateProjectModules(
-  db: AppLoadContext['db'],
+  context: AppLoadContext,
   data: {
     mainObjective: string
     metadata?: string | null
@@ -86,7 +86,7 @@ export async function generateProjectModules(
 ) {
   const { mainObjective, metadata } = data
 
-  const generalModules = await db.query.GeneralModules.findMany({
+  const generalModules = await context.db.query.GeneralModules.findMany({
     columns: {
       id: true,
       name: true,
@@ -100,8 +100,12 @@ export async function generateProjectModules(
     generalModules,
   })
 
+  const aiClient = createOpenAI({
+    apiKey: context.cloudflare.env.OPENAI_API_KEY,
+  })
+
   const { object: projectModules } = await generateObject({
-    model: openai('gpt-3.5-turbo'),
+    model: aiClient('gpt-3.5-turbo'),
     prompt: userPrompt,
     system: systemPrompt,
     output: 'array',

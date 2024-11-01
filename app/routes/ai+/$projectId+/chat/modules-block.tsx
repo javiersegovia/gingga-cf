@@ -1,12 +1,14 @@
 import {
-  type GetProjectModuleResponse,
-  type GetProjectResponse,
   useDeleteProjectModuleMutation,
   useGenerateComplexityMetricsMutation,
   useGenerateFunctionalitiesMutation,
   useProjectModuleQuery,
   useProjectQuery,
   useUpdateProjectModuleMutation,
+} from '@/queries/use-project-query'
+import type {
+  GetProjectModuleResponse,
+  GetProjectResponse,
 } from '@/queries/use-project-query'
 import { useParams } from '@remix-run/react'
 import { Button } from '@/components/ui/button'
@@ -56,10 +58,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  UpdateProjectModuleSchema,
-  type UpdateProjectModule,
-} from '@/schemas/project-schema'
+import { UpdateProjectModuleSchema } from '@/schemas/project-schema'
+import type { UpdateProjectModule } from '@/schemas/project-schema'
 import { Separator } from '@/components/ui/separator'
 import { ProjectModuleSkeleton } from '@/components/projects/project-module-skeleton'
 import { H4 } from '@/components/ui/typography'

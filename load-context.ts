@@ -1,4 +1,4 @@
-import { drizzle, NeonDatabase } from 'drizzle-orm/neon-serverless'
+import {  NeonDatabase } from 'drizzle-orm/neon-serverless'
 import * as schema from '@/db/schema'
 import { Context } from 'hono'
 import type { SecureHeadersVariables } from 'hono/secure-headers'

@@ -1,7 +1,7 @@
-import {
-  json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+import { json } from '@remix-run/cloudflare'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
 } from '@remix-run/cloudflare'
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { UpdateProjectModuleSchema } from '@/schemas/project-schema'
@@ -15,15 +15,13 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     throw new Error('Project ID and Module ID are required')
   }
 
-  const { getProjectModuleById } = new ProjectModuleService(context.db)
+  const { getProjectModuleById } = new ProjectModuleService(context)
 
   const projectModule = await getProjectModuleById(projectId, moduleId)
 
   if (!projectModule) {
     throw json({ error: 'Project module not found' }, { status: 404 })
   }
-
-  // const { complexityMetricScore, estimatedHours } = await calculateModuleMetrics(moduleId)
 
   return json(projectModule)
 }
@@ -40,7 +38,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   const { updateProjectModuleById, deleteProjectModuleById } =
-    new ProjectModuleService(context.db)
+    new ProjectModuleService(context)
 
   if (request.method === 'PUT') {
     const jsonData = await request.json()

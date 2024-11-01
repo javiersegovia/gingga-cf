@@ -35,10 +35,8 @@ import {
   BadgeCheckIcon,
   BrainIcon,
 } from 'lucide-react'
-import {
-  type UpdateFunctionality,
-  UpdateFunctionalitySchema,
-} from '@/schemas/project-schema'
+import { UpdateFunctionalitySchema } from '@/schemas/project-schema'
+import type { UpdateFunctionality } from '@/schemas/project-schema'
 import type { GetFunctionalityResponse } from '@/queries/use-project-query'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/core/utils'

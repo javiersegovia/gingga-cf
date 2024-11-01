@@ -1,7 +1,6 @@
 import type React from 'react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useRef } from 'react'
 import { cn } from '@/core/utils'
 import { SparklesCore } from '@/components/ui/sparkles'
 

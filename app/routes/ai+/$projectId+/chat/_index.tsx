@@ -4,11 +4,10 @@ import { requireUserId } from '@/core/auth/auth-utils.server'
 import { checkHoneypot } from '@/core/honeypot.server'
 import { parseWithZod } from '@conform-to/zod'
 import { invariantResponse } from '@epic-web/invariant'
-import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  json,
-  redirect,
+import { json, redirect } from '@remix-run/cloudflare'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
 } from '@remix-run/cloudflare'
 import { Outlet, useParams, useSearchParams } from '@remix-run/react'
 import { ObjectivesSchema } from '@/schemas/project-schema'
@@ -27,7 +26,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   await requireUserId(request, context)
 
   const { getProjectById, getProjectWithModules, getProjectStats } =
-    new ProjectService(context.db)
+    new ProjectService(context)
 
   invariantResponse(params.projectId, 'Not found', { status: 404 })
   const projectWithModules = await getProjectWithModules(params.projectId)
@@ -53,7 +52,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   const formData = await request.formData()
   checkHoneypot(formData)
 
-  const { getProjectById } = new ProjectService(context.db)
+  const { getProjectById } = new ProjectService(context)
 
   const project = await getProjectById(params.projectId)
   invariantResponse(project, 'Not found', { status: 404 })
