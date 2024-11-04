@@ -181,7 +181,7 @@ export function Sidebar({ projects }: SidebarProps) {
                   className="text-2xl font-bold col-span-1 relative z-10"
                 >
                   <img
-                    src="/img/logo-iso-white.svg"
+                    src="/assets/img/logo/logo-iso-light.svg"
                     alt="GINGGA"
                     width={127}
                     className="object-contain"
