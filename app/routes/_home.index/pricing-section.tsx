@@ -21,9 +21,9 @@ function MonthlyPrice({
   className?: string
 }) {
   return (
-    <div className={cn('flex items-center space-x-2', className)}>
+    <div className={cn('flex items-center space-x-2 font-title', className)}>
       <p className="text-4xl font-bold text-white mb-2 text-inherit">
-        ${price}
+        £{price}
       </p>
       <p className="inline-block text-gray-200">/ MONTH</p>
     </div>
@@ -122,7 +122,7 @@ export function PricingSection() {
 
             <CardContent>
               <MonthlyPrice price={advancedPrice} className="text-white" />
-              <p className="text-red-500 mb-6">No spots available</p>
+              <p className="text-green-500 mb-6">Spots available</p>
               <ul className="flex flex-col space-y-2 mb-8">
                 {[
                   { text: 'Comprehensive software features' },

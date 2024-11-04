@@ -10,7 +10,7 @@ export class AuthSessionStorage {
     typeof createCookieSessionStorage<SessionData, SessionData>
   >
 
-  private constructor(private c: AppLoadContext) {
+  private constructor(c: AppLoadContext) {
     const sessionStorage = createCookieSessionStorage({
       cookie: {
         name: 'g_session',

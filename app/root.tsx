@@ -1,13 +1,4 @@
-import {
-  browserTracingIntegration,
-  captureRemixErrorBoundaryError,
-  withSentry,
-
-  // browserProfilingIntegration,
-  // browserTracingIntegration,
-  // replayIntegration,
-  init as sentryInit,
-} from '@sentry/remix'
+import { captureRemixErrorBoundaryError, withSentry } from '@sentry/remix'
 import {
   Links,
   Meta,
@@ -15,8 +6,6 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
-  useLocation,
-  useMatches,
   useRouteError,
 } from '@remix-run/react'
 
@@ -51,6 +40,7 @@ import { ProgressBar } from './components/ui/progress-bar'
 import { Toaster } from './components/ui/toaster'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { GeneralErrorBoundary } from './components/error-boundary'
+import { SentryService } from './core/sentry.client'
 
 export const links: LinksFunction = () => {
   return [
@@ -152,6 +142,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       sentry: {
         dsn: context.cloudflare.env.SENTRY_DSN,
         mode: context.cloudflare.env.NODE_ENV,
+        enabled: context.cloudflare.env.SENTRY_ENABLED_IN_DEV,
       },
       toast,
       honeyProps,
@@ -235,48 +226,16 @@ function App() {
   )
 }
 
-export const ClientLoader = () => {
-  sentryInit({
-    dsn: 'https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184',
-    environment: 'production',
-    beforeSend(event) {
-      if (event.request?.url) {
-        const url = new URL(event.request.url)
-        if (
-          url.protocol === 'chrome-extension:' ||
-          url.protocol === 'moz-extension:'
-        ) {
-          // This error is from a browser extension, ignore it
-          return null
-        }
-      }
-      return event
-    },
-    integrations: [
-      browserTracingIntegration({
-        useEffect,
-        useLocation,
-        useMatches,
-      }),
-      // replayIntegration(),
-      // browserProfilingIntegration(),
-    ],
-
-    // Set tracesSampleRate to 1.0 to capture 100%
-    // of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 1.0,
-
-    // Capture Replay for 10% of all sessions,
-    // plus for 100% of sessions with an error
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-  })
-  return null
-}
-
 function AppWithProviders() {
   const data = useLoaderData<typeof loader>()
+
+  const { dsn, mode, enabled } = data.sentry
+
+  useEffect(() => {
+    if (enabled) {
+      SentryService.init({ dsn, environment: mode })
+    }
+  }, [enabled, dsn, mode])
 
   return (
     <HoneypotProvider {...data.honeyProps}>

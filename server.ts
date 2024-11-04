@@ -1,18 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { RequestHandler } from '@remix-run/cloudflare'
 import { Hono } from 'hono'
-import { remix } from 'remix-hono/handler'
-
+import { sentry } from '@hono/sentry'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
-import { getLoadContext } from './load-context'
-import type { ContextEnv } from './load-context'
+import { remix } from 'remix-hono/handler'
 import { Client, neonConfig } from '@neondatabase/serverless'
-
 import { drizzle } from 'drizzle-orm/neon-serverless'
 import ws from 'ws'
-
 import * as schema from '@/db/schema'
-import { sentry } from '@hono/sentry'
 import { config } from 'dotenv'
+import { getLoadContext } from './load-context'
+import type { ContextEnv } from './load-context'
 
 neonConfig.webSocketConstructor = ws
 
@@ -20,19 +18,6 @@ const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
 
 config({ path: '.dev.vars' })
-
-app.use('*', async (c, next) => {
-  const client = new Client(c.env.DATABASE_URL)
-  await client.connect()
-  const db = drizzle(client, { schema })
-
-  c.set('db', db)
-  await next()
-})
-
-console.log('~~~~~~~~~~~~~~ process.env.SENTRY_DSN')
-console.log(process.env.SENTRY_DSN)
-console.log(process.env.NODE_ENV)
 
 app.use('*', async (c, next) => {
   return secureHeaders({
@@ -54,9 +39,10 @@ app.use('*', async (c, next) => {
   })(c, next)
 })
 
-app.use(
-  '*',
-  sentry({
+app.use('*', async (c, next) => {
+  return sentry({
+    dsn: c.env.SENTRY_DSN,
+    dist: 'server',
     tracesSampleRate: 1,
     denyUrls: ['/resources/healthcheck', '/assets/*'],
     tracesSampler(samplingContext) {
@@ -72,8 +58,8 @@ app.use(
       const isHealthcheck = event.request?.headers?.['x-healthcheck'] === 'true'
       return isHealthcheck ? null : event
     },
-  }),
-)
+  })(c, next)
+})
 
 // TODO - Implement a proper healthcheck
 // - check if we can connect to the database
@@ -83,6 +69,17 @@ app.get('/resources/healthcheck', (c) => {
 
 // TODO - Implement Rate limiting
 // https://github.com/rhinobase/hono-rate-limiter
+
+app.use('*', async (c, next) => {
+  const client = new Client(c.env.DATABASE_URL)
+  await client.connect()
+  const db = drizzle(client, { schema })
+
+  // TODO - Close db connections
+
+  c.set('db', db)
+  await next()
+})
 
 app.use(async (c, next) => {
   const db = c.get('db')

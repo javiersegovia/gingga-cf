@@ -334,8 +334,6 @@ export const useFunctionalityQuery = (
         { signal },
       )
 
-      console.log('FINISHED RESPONSE ~~~~~~~~~~~~~~~~', functionalityId)
-
       if (!response.ok) {
         throw new Error('Failed to fetch functionality')
       }

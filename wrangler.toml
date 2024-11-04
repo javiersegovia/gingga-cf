@@ -1,10 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "hono-cf"
+name = "gingga"
 # pages_build_output_dir = "./build/client"
 main = "./server.ts"
 
 compatibility_date = "2024-10-22"
 compatibility_flags = ["nodejs_compat_v2"]
+
+routes = [{ pattern = "gingga.com", custom_domain = true }]
 
 # https://developers.cloudflare.com/workers/static-assets/binding/
 [assets]
@@ -37,6 +39,13 @@ enabled = true
 # set this to false to prevent search engines from indexing the website
 # default to allow indexing for seo safety
 ALLOW_INDEXING = true
+RESEND_EMAIL_FROM = "Gingga <notifications@gingga.com>"
+SENTRY_ORG = "gingga"
+SENTRY_PROJECT = "javascript"
+SENTRY_DSN = "https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184"
+SENTRY_ENABLED_IN_DEV = true
+DEV_APP_URL = "http://localhost:3000"
+PROD_APP_URL = "https://gingga.com"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai

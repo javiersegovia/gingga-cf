@@ -1,4 +1,4 @@
-import {  NeonDatabase } from 'drizzle-orm/neon-serverless'
+import { NeonDatabase } from 'drizzle-orm/neon-serverless'
 import * as schema from '@/db/schema'
 import { Context } from 'hono'
 import type { SecureHeadersVariables } from 'hono/secure-headers'
@@ -18,11 +18,13 @@ export type ContextEnv = {
 }
 
 export function getLoadContext(c: Context<ContextEnv>) {
+  const mode = process.env.NODE_ENV
+
   const cloudflare = {
     nonce: c.get('secureHeadersNonce'),
     env: {
       ...c.env,
-      NODE_ENV: process.env.NODE_ENV,
+      NODE_ENV: mode,
     },
   }
 

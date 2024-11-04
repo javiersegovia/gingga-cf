@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useOptionalUser } from '@/core/auth/user'
 import { Form, Link } from '@remix-run/react'
-import { LogOut, Settings } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import type { Users } from '@/db/schema'
 
 type UserDropdownProps = {
@@ -46,7 +46,7 @@ function UserDropdown({ user }: UserDropdownProps) {
           <div className="text-xs text-gray-400">{user.email}</div>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           asChild
           className="cursor-pointer hover:bg-gray-800 text-gray-300"
         >
@@ -54,7 +54,7 @@ function UserDropdown({ user }: UserDropdownProps) {
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
 
         <DropdownMenuItem
           asChild

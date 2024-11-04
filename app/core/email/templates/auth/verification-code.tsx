@@ -88,7 +88,7 @@ export const VerificationEmail = ({
 
 VerificationEmail.PreviewProps = {
   otp: 'DJZ-TLX',
-  onboardingUrl: `${process.env.PROJECT_URL}/verify`,
+  onboardingUrl: `http://localhost:3000/verify`,
 } as VerificationEmailProps
 
 export default VerificationEmail

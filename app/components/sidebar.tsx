@@ -3,16 +3,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import {
-  Plus,
-  Settings,
-  LogOut,
-  Sun,
-  Moon,
-  Laptop,
-  Folder,
-  PanelLeft,
-} from 'lucide-react'
+import { Plus, LogOut, Folder, PanelLeft } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -97,7 +88,7 @@ function AccountMenu({ isExpanded }: AccountMenuProps) {
             {/* <p className="text-xs leading-none text-gray-400">{user.accountType}</p> */}
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-700" />
+        {/* <DropdownMenuSeparator className="bg-gray-700" />
         <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
@@ -115,7 +106,7 @@ function AccountMenu({ isExpanded }: AccountMenuProps) {
         <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
           <Laptop className="mr-2 h-4 w-4" />
           <span>System</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuSeparator className="bg-gray-700" />
         <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800">
           <Form action="/logout" method="POST">

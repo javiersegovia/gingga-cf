@@ -2,21 +2,22 @@
 
 interface Env {
 	ALLOW_INDEXING: true;
+	RESEND_EMAIL_FROM: "Gingga <notifications@gingga.com>";
+	SENTRY_ORG: "gingga";
+	SENTRY_PROJECT: "javascript";
+	SENTRY_DSN: "https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184";
+	SENTRY_ENABLED_IN_DEV: true;
+	DEV_APP_URL: "http://localhost:3000";
+	PROD_APP_URL: "https://gingga.com";
 	DATABASE_URL: string;
 	SESSION_SECRET: string;
 	HONEYPOT_SECRET: string;
-	INTERNAL_COMMAND_TOKEN: string;
 	GITHUB_CLIENT_ID: string;
 	GITHUB_CLIENT_SECRET: string;
 	GITHUB_TOKEN: string;
 	RESEND_API_KEY: string;
-	RESEND_EMAIL_FROM: string;
 	OPENAI_API_KEY: string;
 	ADMIN_USER_EMAIL: string;
 	ADMIN_USER_PASSWORD: string;
-	PROJECT_URL: string;
-	SENTRY_DSN: string;
 	SENTRY_AUTH_TOKEN: string;
-	SENTRY_ORG: string;
-	SENTRY_PROJECT: string;
 }

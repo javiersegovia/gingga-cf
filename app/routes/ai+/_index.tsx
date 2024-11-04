@@ -12,6 +12,7 @@ import { Spacer } from '@/components/ui/spacer'
 import { FlickeringGrid } from '@/components/ui/flickering-grid'
 import { z } from 'zod'
 import { H1 } from '@/components/ui/typography'
+import { SparklesIcon } from 'lucide-react'
 
 export const ProjectIdeaSchema = z.object({
   projectIdea: z
@@ -42,9 +43,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
 function Hero() {
   return (
     <div className="text-center space-y-4">
-      <H1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+      <H1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white">
         Turn your idea into
-        <br />a <span className="text-yellow-400">development plan</span>
+        <br />a <span className="text-yellow-400">roadmap</span>
       </H1>
       <p className="text-white max-w-xl mx-auto">
         Analyze the complexity of your project and generate an estimation of
@@ -98,11 +99,14 @@ export default function GinggaLandingPage() {
 
             <FormStatusButton
               type="submit"
-              variant="secondary"
-              className="w-auto mx-auto bg-gray-700"
+              variant="default"
+              className="w-auto mx-auto font-title bg-gray-950 border border-gray-700 text-gray-200 hover:bg-black hover:text-white"
               size="xl"
             >
-              Start generation
+              <div className="flex items-center justify-center">
+                <SparklesIcon className="w-4 h-4 mr-2" />
+                <span className="block">Start generation</span>
+              </div>
             </FormStatusButton>
           </Form>
         </FormProvider>

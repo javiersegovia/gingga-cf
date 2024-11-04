@@ -21,13 +21,18 @@ export class AuthService {
       target: email,
     })
 
+    const baseUrl =
+      this.ctx.cloudflare.env.NODE_ENV === 'production'
+        ? this.ctx.cloudflare.env.PROD_APP_URL
+        : this.ctx.cloudflare.env.DEV_APP_URL
+
     const response = await sendEmail({
       to: email,
       subject: 'Welcome to Gingga!',
       env: this.ctx.cloudflare.env,
       react: (
         <VerificationEmail
-          baseUrl={this.ctx.cloudflare.env.PROJECT_URL}
+          baseUrl={baseUrl}
           onboardingUrl={verifyUrl.toString()}
           otp={otp}
         />
