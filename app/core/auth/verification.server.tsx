@@ -1,4 +1,3 @@
-// import { VerificationEmail } from '@/core/email/templates/auth/verification-code'
 import {
   AppLoadContext,
   createCookieSessionStorage,
@@ -6,13 +5,8 @@ import {
   redirect,
   SessionData,
 } from '@remix-run/cloudflare'
-// import { VerificationTypes } from './auth-schema'
-// import { getDomainUrl } from '../utils'
 import { Sessions, Users, Verifications } from '@/db/schema'
-// import { sendEmail } from '../email/email.server'
 import { and, eq, gt } from 'drizzle-orm'
-// import { TOTPStrategy } from 'remix-auth-totp'
-// import { AuthSession } from './auth-service.server'
 import {
   codeQueryParam,
   redirectToQueryParam,
@@ -30,9 +24,6 @@ import { invariant } from '@epic-web/invariant'
 import { getSessionExpirationDate, sessionKey } from './auth.server'
 import { AuthSessionStorage } from './auth-session.server'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-
-// // eslint-disable-next-line import/no-extraneous-dependencies, @typescript-eslint/no-unused-vars
-// import * as jose from 'jose'
 
 export const onboardingEmailSessionKey = 'onboardingEmail' as const
 
@@ -82,7 +73,6 @@ export async function prepareVerification(
   const redirectTo = new URL(verifyUrl.toString())
 
   globalThis.Buffer = Buffer
-  // globalThis.crypto = crypto
 
   const { otp, ...verificationConfig } = await generateTOTP({
     // Leaving off 0, O, and I on purpose to avoid confusing users.

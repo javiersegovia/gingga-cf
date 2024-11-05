@@ -1,6 +1,6 @@
 import {
   ActionFunctionArgs,
-  json,
+  data,
   LoaderFunctionArgs,
   redirect,
 } from '@remix-run/cloudflare'
@@ -29,7 +29,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const submission = parseWithZod(formData, { schema: LoginSchema })
 
   if (submission.status !== 'success' || !submission.value.email) {
-    return json(
+    return data(
       { result: submission.reply({ hideFields: ['password'] }) },
       { status: submission.status === 'error' ? 400 : 200 },
     )
@@ -49,7 +49,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     toastType: 'error',
   })
 
-  return json({ result: submission.reply() }, { headers })
+  return data({ result: submission.reply() }, { headers })
 }
 
 export default function Route() {

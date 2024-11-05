@@ -14,7 +14,7 @@ const main = async () => {
     await migrate(db, { migrationsFolder: './app/db/drizzle' })
     console.info('Migration complete')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
   process.exit(0)
 }

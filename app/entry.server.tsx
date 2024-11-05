@@ -11,7 +11,10 @@ import { renderToReadableStream } from 'react-dom/server'
 import { NonceProvider } from '@/core/nonce-provider'
 
 // https://remix.run/docs/en/main/guides/single-fetch#streaming-timeout
-const ABORT_DELAY = 5000
+const ABORT_DELAY = 6000
+
+// Reject all pending promises from handler functions after 5 seconds
+export const streamTimeout = 5000
 
 export default async function handleRequest(
   request: Request,

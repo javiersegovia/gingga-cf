@@ -4,15 +4,14 @@ import { Hono } from 'hono'
 import { sentry } from '@hono/sentry'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { remix } from 'remix-hono/handler'
-import { Client, neonConfig } from '@neondatabase/serverless'
+
+import { Client } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-serverless'
-import ws from 'ws'
+
 import * as schema from '@/db/schema'
 import { config } from 'dotenv'
 import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
-
-neonConfig.webSocketConstructor = ws
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
@@ -61,8 +60,7 @@ app.use('*', async (c, next) => {
   })(c, next)
 })
 
-// TODO - Implement a proper healthcheck
-// - check if we can connect to the database
+// TODO - Implement a proper healthcheck with db connection and alerts
 app.get('/resources/healthcheck', (c) => {
   return c.text('ok')
 })
@@ -75,41 +73,40 @@ app.use('*', async (c, next) => {
   await client.connect()
   const db = drizzle(client, { schema })
 
-  // TODO - Close db connections
+  const remixContext = {
+    ...getLoadContext(c),
+    db,
+  }
 
-  c.set('db', db)
-  await next()
-})
+  try {
+    if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
+      // @ts-expect-error it may not be built yet
+      const serverBuild = await import('./build/server')
+      const remixHandler = remix({
+        // @ts-ignore
+        build: serverBuild,
+        mode: 'production',
+        getLoadContext: () => remixContext,
+      })
 
-app.use(async (c, next) => {
-  const db = c.get('db')
+      const response = await remixHandler(c, next)
+      c.executionCtx.waitUntil(client.end())
+      return response
+    } else {
+      if (!handler) {
+        // @ts-expect-error it's not typed
+        const build = await import('virtual:remix/server-build')
+        const { createRequestHandler } = await import('@remix-run/cloudflare')
+        handler = createRequestHandler(build, 'development')
+      }
 
-  if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-    const serverBuild = await import('./build/server')
-    return remix({
-      // @ts-ignore
-      build: serverBuild,
-      mode: 'production',
-      getLoadContext(c) {
-        return {
-          ...getLoadContext(c),
-          db,
-        }
-      },
-    })(c, next)
-  } else {
-    if (!handler) {
-      // @ts-expect-error it's not typed
-      const build = await import('virtual:remix/server-build')
-      const { createRequestHandler } = await import('@remix-run/cloudflare')
-      handler = createRequestHandler(build, 'development')
+      const response = await handler(c.req.raw, remixContext)
+      c.executionCtx.waitUntil(client.end())
+      return response
     }
-
-    const remixContext = {
-      ...getLoadContext(c),
-      db,
-    }
-    return handler(c.req.raw, remixContext)
+  } catch (error: unknown) {
+    console.error(error)
+    return c.text('Error in server.ts')
   }
 })
 

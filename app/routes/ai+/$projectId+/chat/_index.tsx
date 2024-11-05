@@ -25,8 +25,7 @@ import { ModulesBlockWithQuery } from './modules-block'
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   await requireUserId(request, context)
 
-  const { getProjectById, getProjectWithModules, getProjectStats } =
-    new ProjectService(context)
+  const { getProjectWithModules, getProjectStats } = new ProjectService(context)
 
   invariantResponse(params.projectId, 'Not found', { status: 404 })
   const projectWithModules = await getProjectWithModules(params.projectId)
@@ -75,7 +74,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
     .set({ mainObjective, metadata })
     .where(eq(Projects.id, project.id))
 
-  const { createProjectModules } = new ProjectModuleService(context.db)
+  const { createProjectModules } = new ProjectModuleService(context)
   await createProjectModules(project.id, { mainObjective, metadata })
 
   return redirect(`/ai/${project.id}/modules`)
@@ -91,6 +90,7 @@ export default function ObjectivesStepRoute() {
     if (pfId && !functionalityId) {
       setFunctionalityId(pfId)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (!params.projectId) return null

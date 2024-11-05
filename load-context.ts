@@ -7,7 +7,9 @@ import { Client } from '@neondatabase/serverless'
 /* type your Hono variables (used with c.get/c.set) here */
 type Variables = SecureHeadersVariables & {
   db: NeonDatabase<typeof schema> & {
-    $client: Client
+    $client: any
+    // $client: Client
+    // $client: Pool
   }
 }
 

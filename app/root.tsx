@@ -10,7 +10,7 @@ import {
 } from '@remix-run/react'
 
 import {
-  json,
+  data,
   LinksFunction,
   LoaderFunctionArgs,
   MetaFunction,
@@ -127,7 +127,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const { toast, headers: toastHeaders } = await getToast(request, context)
   const honeyProps = honeypot.getInputProps()
 
-  return json(
+  return data(
     {
       user,
       allowIndexing: context.cloudflare.env.ALLOW_INDEXING,
