@@ -72,8 +72,7 @@ export default defineConfig({
 
     process.env.SENTRY_AUTH_TOKEN
       ? sentryVitePlugin({
-          // todo: uncomment this
-          // disable: process.env.MODE !== 'production',
+          disable: process.env.NODE_ENV !== 'production',
           authToken: process.env.SENTRY_AUTH_TOKEN,
           org: process.env.SENTRY_ORG,
           project: process.env.SENTRY_PROJECT,

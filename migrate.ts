@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 config({ path: '.dev.vars' })
 
 const db = drizzle(
-  postgres(`${process.env.DATABASE_URL}`, { ssl: 'require', max: 1 }),
+  postgres(`${process.env.DIRECT_DB_URL}`, { ssl: 'require', max: 1 }),
 )
 
 const main = async () => {

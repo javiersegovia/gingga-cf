@@ -1,7 +1,7 @@
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { json } from '@remix-run/cloudflare'
 import type { ActionFunctionArgs } from '@remix-run/cloudflare'
-import { convertToCoreMessages, streamText, tool } from 'ai'
+import { convertToCoreMessages, streamText, tool, APICallError } from 'ai'
 import { z } from 'zod'
 import { createOpenAI } from '@ai-sdk/openai'
 
@@ -98,147 +98,172 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const aiClient = createOpenAI({
+  const openai = createOpenAI({
     apiKey: context.cloudflare.env.OPENAI_API_KEY,
   })
 
-  const result = await streamText({
-    model: aiClient('gpt-3.5-turbo'),
-    abortSignal: request.signal,
-    system: systemPrompt,
-    tools: {
-      getProjectInfo: tool({
-        description: 'Get information about the current project',
-        parameters: z.object({
-          infoType: z.enum(['general', 'objectives', 'modules', 'tasks']),
-        }),
-        execute: async ({ infoType }) => {
-          try {
-            switch (infoType) {
-              case 'general':
-                return {
-                  success: true,
-                  description:
-                    'General project information retrieved successfully',
-                  data: {
-                    name: project.name,
-                    description: project.description,
-                    mainObjective: project.mainObjective,
-                  },
-                }
-              case 'objectives':
-                return {
-                  success: true,
-                  description: 'Project objectives retrieved successfully',
-                  data: {
-                    mainObjective: project.mainObjective,
-                    specificObjectives: project.specificObjectives,
-                  },
-                }
-              case 'modules':
-                return {
-                  success: true,
-                  description: 'Project modules retrieved successfully',
-                  data: project.modules,
-                }
-              case 'tasks':
-                return {
-                  success: true,
-                  description: 'Project tasks retrieved successfully',
-                  data: project.modules.flatMap(
-                    (module) => module.functionalities,
-                  ),
-                }
-              default:
-                return {
-                  success: false,
-                  description: 'Invalid info type',
-                  error: 'Invalid info type provided',
-                }
+  try {
+    const result = await streamText({
+      model: openai('gpt-3.5-turbo'),
+      abortSignal: request.signal,
+      system: systemPrompt,
+      tools: {
+        getProjectInfo: tool({
+          description: 'Get information about the current project',
+          parameters: z.object({
+            infoType: z.enum(['general', 'objectives', 'modules', 'tasks']),
+          }),
+          execute: async ({ infoType }) => {
+            try {
+              switch (infoType) {
+                case 'general':
+                  return {
+                    success: true,
+                    description:
+                      'General project information retrieved successfully',
+                    data: {
+                      name: project.name,
+                      description: project.description,
+                      mainObjective: project.mainObjective,
+                    },
+                  }
+                case 'objectives':
+                  return {
+                    success: true,
+                    description: 'Project objectives retrieved successfully',
+                    data: {
+                      mainObjective: project.mainObjective,
+                      specificObjectives: project.specificObjectives,
+                    },
+                  }
+                case 'modules':
+                  return {
+                    success: true,
+                    description: 'Project modules retrieved successfully',
+                    data: project.modules,
+                  }
+                case 'tasks':
+                  return {
+                    success: true,
+                    description: 'Project tasks retrieved successfully',
+                    data: project.modules.flatMap(
+                      (module) => module.functionalities,
+                    ),
+                  }
+                default:
+                  return {
+                    success: false,
+                    description: 'Invalid info type',
+                    error: 'Invalid info type provided',
+                  }
+              }
+            } catch (error) {
+              console.error('Error retrieving project info:', error)
+              return {
+                success: false,
+                description: 'Failed to retrieve project information',
+                error: error instanceof Error ? error.message : 'Unknown error',
+              }
             }
-          } catch (error) {
-            console.error('Error retrieving project info:', error)
-            return {
-              success: false,
-              description: 'Failed to retrieve project information',
-              error: error instanceof Error ? error.message : 'Unknown error',
-            }
-          }
-        },
-      }),
-      getModules: tool({
-        description: 'Get a list of all project modules.',
-        parameters: z.object({}),
-        execute: async () => {
-          return project.modules
-        },
-      }),
-      getFunctionalitiesByModuleId: tool({
-        description: 'Get a list of all functionalities in a project module.',
-        parameters: z.object({
-          moduleId: z.string(),
+          },
         }),
-        execute: async ({ moduleId }) => {
-          return project.modules.find((module) => module.id === moduleId)
-            ?.functionalities
-        },
-      }),
+        getModules: tool({
+          description: 'Get a list of all project modules.',
+          parameters: z.object({}),
+          execute: async () => {
+            return project.modules
+          },
+        }),
+        getFunctionalitiesByModuleId: tool({
+          description: 'Get a list of all functionalities in a project module.',
+          parameters: z.object({
+            moduleId: z.string(),
+          }),
+          execute: async ({ moduleId }) => {
+            return project.modules.find((module) => module.id === moduleId)
+              ?.functionalities
+          },
+        }),
 
-      formatResponse: tool({
-        description:
-          'Format the response to be sent to the user. This is always the last tool called in the conversation. In this response, you should summarize all the "tools" you used.',
-        parameters: z.object({ message: z.string() }),
-      }),
-    },
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are an AI assistant helping with software development questions. ' +
-          'You have access to information about the current project. ' +
-          'Use the getProjectInfo tool to fetch relevant information when needed. ' +
-          'For certain actions, use the requestConfirmation tool to ask for user confirmation before proceeding.',
+        formatResponse: tool({
+          description:
+            'Format the response to be sent to the user. This is always the last tool called in the conversation. In this response, you should summarize all the "tools" you used.',
+          parameters: z.object({ message: z.string() }),
+        }),
       },
-      ...convertToCoreMessages(messages),
-    ],
-    maxSteps: 5, // Allow up to 5 steps for tool calls
-    experimental_toolCallStreaming: true,
-    onFinish(event) {
-      console.log(event.usage)
-      const totalTokens = event.usage?.totalTokens || 0
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an AI assistant helping with software development questions. ' +
+            'You have access to information about the current project. ' +
+            'Use the getProjectInfo tool to fetch relevant information when needed. ' +
+            'For certain actions, use the requestConfirmation tool to ask for user confirmation before proceeding.',
+        },
+        ...convertToCoreMessages(messages),
+      ],
+      maxSteps: 5, // Allow up to 5 steps for tool calls
+      experimental_toolCallStreaming: true,
+      onFinish(event) {
+        console.log(event.usage)
+        const totalTokens = event.usage?.totalTokens || 0
 
-      console.log(`Total Tokens Used: ${totalTokens}`)
+        console.log(`Total Tokens Used: ${totalTokens}`)
 
-      // GPT-3.5 Turbo: $0.002 per 1K tokens
-      const gpt35Cost = (totalTokens / 1000) * 0.002
-      console.log(`GPT-3.5 Turbo: $${gpt35Cost.toFixed(4)} USD`)
+        // GPT-3.5 Turbo: $0.002 per 1K tokens
+        const gpt35Cost = (totalTokens / 1000) * 0.002
+        console.log(`GPT-3.5 Turbo: $${gpt35Cost.toFixed(4)} USD`)
 
-      // Claude 3 Sonnet: $0.003 per 1K tokens (estimated)
-      const claudeCost = (totalTokens / 1000) * 0.003
-      console.log(`Claude 3 Sonnet: $${claudeCost.toFixed(4)} USD`)
+        // Claude 3 Sonnet: $0.003 per 1K tokens (estimated)
+        const claudeCost = (totalTokens / 1000) * 0.003
+        console.log(`Claude 3 Sonnet: $${claudeCost.toFixed(4)} USD`)
 
-      // GPT-4: $0.03 per 1K tokens
-      const gpt4Cost = (totalTokens / 1000) * 0.03
-      console.log(`GPT-4: $${gpt4Cost.toFixed(4)} USD`)
+        // GPT-4: $0.03 per 1K tokens
+        const gpt4Cost = (totalTokens / 1000) * 0.03
+        console.log(`GPT-4: $${gpt4Cost.toFixed(4)} USD`)
 
-      // Anthropic's Claude 2: $0.01102 per 1K tokens
-      const claude2Cost = (totalTokens / 1000) * 0.01102
-      console.log(`Claude 2: $${claude2Cost.toFixed(4)} USD`)
+        // Anthropic's Claude 2: $0.01102 per 1K tokens
+        const claude2Cost = (totalTokens / 1000) * 0.01102
+        console.log(`Claude 2: $${claude2Cost.toFixed(4)} USD`)
 
-      // OpenAI's GPT-4 Turbo: $0.01 per 1K tokens
-      const gpt4TurboCost = (totalTokens / 1000) * 0.01
-      console.log(`GPT-4 Turbo: $${gpt4TurboCost.toFixed(4)} USD`)
-    },
-    onStepFinish(event) {
-      console.log('onStepFinish')
-      console.log(event)
-    },
-  })
+        // OpenAI's GPT-4 Turbo: $0.01 per 1K tokens
+        const gpt4TurboCost = (totalTokens / 1000) * 0.01
+        console.log(`GPT-4 Turbo: $${gpt4TurboCost.toFixed(4)} USD`)
+      },
+      // onStepFinish(event) {
+      // console.log('onStepFinish')
+      // console.log(event)
+      // },
+    })
 
-  const controller = new AbortController()
-  request.signal.addEventListener('abort', () => {
-    controller.abort()
-  })
+    const controller = new AbortController()
+    request.signal.addEventListener('abort', () => {
+      controller.abort()
+    })
 
-  return result.toDataStreamResponse()
+    return result.toDataStreamResponse()
+  } catch (error) {
+    let message = 'An unknown error occurred'
+
+    if (APICallError.isInstance(error)) {
+      // todo: Handle different error types from AI SDK
+      const AICallDataErrorSchema = z.object({
+        data: z.object({
+          error: z.object({
+            message: z.string(),
+          }),
+        }),
+      })
+
+      const parsedError = AICallDataErrorSchema.safeParse(error)
+
+      if (parsedError.success) {
+        message = parsedError.data.data.error.message
+      }
+    }
+
+    throw json(message, {
+      status: 500,
+    })
+  }
 }

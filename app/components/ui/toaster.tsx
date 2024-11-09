@@ -14,17 +14,25 @@ export function Toaster() {
   return (
     <ToastProvider>
       {/* We will use the "Type" prop to determine the styling */}
-      {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-      {toasts.map(({ id, title, description, action, type, ...props }) => (
-        <Toast key={id} {...props}>
-          <div className="grid gap-1">
-            {title && <ToastTitle>{title}</ToastTitle>}
-            {description && <ToastDescription>{description}</ToastDescription>}
-          </div>
-          {action}
-          <ToastClose />
-        </Toast>
-      ))}
+      {toasts.map(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ({ id, title, description, action, type, toastType, ...props }) => (
+          <Toast
+            key={id}
+            {...props}
+            variant={toastType === 'error' ? 'destructive' : 'default'}
+          >
+            <div className="grid gap-1">
+              {title && <ToastTitle>{title}</ToastTitle>}
+              {description && (
+                <ToastDescription>{description}</ToastDescription>
+              )}
+            </div>
+            {action}
+            <ToastClose />
+          </Toast>
+        ),
+      )}
       <ToastViewport />
     </ToastProvider>
   )

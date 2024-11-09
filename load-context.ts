@@ -7,9 +7,7 @@ import { Client } from '@neondatabase/serverless'
 /* type your Hono variables (used with c.get/c.set) here */
 type Variables = SecureHeadersVariables & {
   db: NeonDatabase<typeof schema> & {
-    $client: any
-    // $client: Client
-    // $client: Pool
+    $client: Client
   }
 }
 
@@ -20,13 +18,11 @@ export type ContextEnv = {
 }
 
 export function getLoadContext(c: Context<ContextEnv>) {
-  const mode = process.env.NODE_ENV
-
   const cloudflare = {
     nonce: c.get('secureHeadersNonce'),
     env: {
       ...c.env,
-      NODE_ENV: mode,
+      NODE_ENV: process.env.NODE_ENV,
     },
   }
 

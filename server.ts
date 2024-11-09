@@ -4,14 +4,13 @@ import { Hono } from 'hono'
 import { sentry } from '@hono/sentry'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { remix } from 'remix-hono/handler'
-
-import { Client } from '@neondatabase/serverless'
+import { Client, neonConfig } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-serverless'
-
 import * as schema from '@/db/schema'
 import { config } from 'dotenv'
 import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
+import ws from 'ws'
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler | undefined
@@ -42,6 +41,7 @@ app.use('*', async (c, next) => {
   return sentry({
     dsn: c.env.SENTRY_DSN,
     dist: 'server',
+    environment: c.env.NODE_ENV,
     tracesSampleRate: 1,
     denyUrls: ['/resources/healthcheck', '/assets/*'],
     tracesSampler(samplingContext) {
@@ -69,7 +69,16 @@ app.get('/resources/healthcheck', (c) => {
 // https://github.com/rhinobase/hono-rate-limiter
 
 app.use('*', async (c, next) => {
+  /**
+   * This is needed for the dev environment.
+   * In production, WebSockets are supported by the Worker
+   */
+  if (typeof WebSocket === 'undefined') {
+    neonConfig.webSocketConstructor = ws
+  }
+
   const client = new Client(c.env.DATABASE_URL)
+
   await client.connect()
   const db = drizzle(client, { schema })
 
@@ -80,7 +89,7 @@ app.use('*', async (c, next) => {
 
   try {
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
-      // @ts-expect-error it may not be built yet
+      // @ts-ignore
       const serverBuild = await import('./build/server')
       const remixHandler = remix({
         // @ts-ignore

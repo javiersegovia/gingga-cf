@@ -4,8 +4,10 @@ import { useChat } from 'ai/react'
 import { ChatMessage } from './chat-message'
 import { Loader2, Send } from 'lucide-react'
 import { Textarea } from '../ui/textarea'
+import { useToast } from '@/hooks/use-toast'
 
 export function Chat() {
+  const { toast } = useToast()
   const { projectId } = useParams()
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
@@ -14,7 +16,14 @@ export function Chat() {
       body: { projectId },
       onToolCall() {},
       onResponse() {},
-      onError() {},
+      onError(error) {
+        toast({
+          title: 'Error',
+          description: JSON.parse(error.message),
+          toastType: 'error',
+          duration: 5000,
+        })
+      },
     })
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
