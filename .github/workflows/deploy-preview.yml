@@ -35,7 +35,7 @@ jobs:
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           username: 'ginggadb_owner'
-          branch_name: preview/${{ steps.branch-name.outputs.current_branch }}
+          branch_name: ${{ format('preview-{0}', github.head_ref || github.ref_name) }}
           api_key: ${{ secrets.NEON_API_KEY }} # Generate an API key in your Neon account settings
 
       - name: Build
