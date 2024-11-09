@@ -1,6 +1,5 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "gingga"
-# pages_build_output_dir = "./build/client"
 main = "./server.ts"
 
 compatibility_date = "2024-10-22"
@@ -135,3 +134,16 @@ PROD_APP_URL = "https://gingga.com"
 # [[vectorize]]
 # binding = "MY_INDEX"
 # index_name = "my-index"
+
+[env.preview]
+workers_dev = true
+
+[env.preview.vars]
+ALLOW_INDEXING = true
+RESEND_EMAIL_FROM = "Gingga <notifications@gingga.com>"
+SENTRY_ORG = "gingga"
+SENTRY_PROJECT = "javascript"
+SENTRY_DSN = "https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184"
+SENTRY_ENABLED_IN_DEV = false
+DEV_APP_URL = "http://localhost:3000"
+PROD_APP_URL = "https://gingga.com"
