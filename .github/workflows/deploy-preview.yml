@@ -60,9 +60,11 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env preview
-          preCommands: |
-            echo "Setting preview environment variables..."
-            echo "DATABASE_URL=${{ steps.create-branch.outputs.db_url_with_pooler }}" >> .dev.vars
+          environment: preview
+          secrets: |
+            DATABASE_URL
+        env:
+          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
 
       - name: Comment on Pull Request
         uses: thollander/actions-comment-pull-request@v2
