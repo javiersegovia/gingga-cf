@@ -1,0 +1,83 @@
+name: Preview Deployment
+on: [pull_request]
+
+env:
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  NEON_USERNAME: ${{ secrets.NEON_USERNAME }}
+  NEON_DB_NAME: ${{ secrets.NEON_DB_NAME }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy Preview
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get git branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v8
+
+      - id: create-branch
+        name: Create Neon Database Branch
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          username: ${{ secrets.NEON_USERNAME }}
+          branch_name: preview/${{ steps.branch-name.outputs.current_branch }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          database: ${{ secrets.NEON_DB_NAME }}
+
+      - name: Build
+        run: pnpm run build
+        env:
+          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+
+      - name: Run Migrations
+        run: pnpm run db:migrate
+        env:
+          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+          DIRECT_DB_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+
+      - name: Deploy to Workers Preview
+        uses: cloudflare/wrangler-action@v3
+        id: deploy
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env preview
+          environment: preview
+          secrets: |
+            DATABASE_URL
+        env:
+          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+
+      - name: Extract Version ID
+        id: version
+        run: |
+          VERSION_ID=$(echo '${{ steps.deploy.outputs.command-output }}' | grep "Current Version ID:" | cut -d' ' -f4 | cut -d'-' -f1)
+          echo "version_id=$VERSION_ID" >> $GITHUB_OUTPUT
+
+      - name: Comment on Pull Request
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          GITHUB_TOKEN: ${{ env.GH_TOKEN }}
+          message: |
+            🚀 Preview deployment is ready!
+
+            Worker Preview URL: https://${{ steps.version.outputs.version_id }}-gingga-preview.jsegoviadev.workers.dev
+            Neon Database Branch: https://console.neon.tech/app/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${{ steps.create-branch.outputs.branch_id }}

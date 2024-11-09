@@ -1,12 +1,12 @@
 # Gingga on the Edge
 
-A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle ORM (with PostgreSQL / Supabase).
+A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle (Serverless PostgreSQL on Neon).
 
 ## 🚀 Features
 
 - **Framework**: [Remix](https://remix.run/) with [Hono](https://hono.dev/) middleware
-- **Platform**: [Cloudflare Pages](https://pages.cloudflare.com/)
-- **Database**: PostgreSQL on [Supabase](https://supabase.com/) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Platform**: [Cloudflare Workers](https://workers.cloudflare.com/)
+- **Database**: Serverless PostgreSQL on [Neon](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)
 - **Authentication**: GitHub OAuth and TOTP support
 - **Email**: [Resend](https://resend.com/)
 - **UI Components**: [ShadcnUI](https://ui.shadcn.com/)
@@ -17,7 +17,7 @@ A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle OR
 
 - Node.js >= 20.0.0
 - pnpm (recommended)
-- Supabase account (PostgreSQL database)
+- Neon account (Serverless PostgreSQL)
 - Cloudflare account
 
 ## 🛠️ Setup
@@ -35,6 +35,7 @@ pnpm install
 
 ```bash
 DATABASE_URL=
+DIRECT_DB_URL=
 SESSION_SECRET=
 HONEYPOT_SECRET=
 GITHUB_CLIENT_ID=
@@ -77,13 +78,13 @@ pnpm deploy
 
 - `drizzle.config.ts`: Database schema and migration settings
 - `vite.config.ts`: Vite configuration with Remix and Hono integration
-- `server.ts`: Main server entry point with Hono middleware
+- `server.ts`: Main server entry point with Hono
 - `wrangler.toml`: Cloudflare configuration
 
 ## 📝 License
 
-[Add your license here]
+Pending
 
 ## 👥 Contributing
 
-[Add contribution guidelines here]
+Pending
