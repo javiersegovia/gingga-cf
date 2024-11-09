@@ -137,14 +137,14 @@ PROD_APP_URL = "https://gingga.com"
 
 [env.preview]
 workers_dev = true
-
-routes = [{ pattern = "preview.gingga.com", custom_domain = true }]
+routes = []
 
 [env.preview.vars]
-ALLOW_INDEXING = true
-RESEND_EMAIL_FROM = "Gingga <notifications@gingga.com>"
+ALLOW_INDEXING = false
+RESEND_EMAIL_FROM = "Gingga Preview <notifications@gingga.com>"
 SENTRY_ORG = "gingga"
 SENTRY_PROJECT = "javascript"
+# TODO: Add Sentry DSN for preview environment
 SENTRY_DSN = "https://b01eb5a3ef515103021d9b49ec52a161@o4508219743207424.ingest.de.sentry.io/4508219751727184"
 SENTRY_ENABLED_IN_DEV = false
 DEV_APP_URL = "http://localhost:3000"
