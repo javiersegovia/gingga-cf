@@ -138,6 +138,8 @@ PROD_APP_URL = "https://gingga.com"
 [env.preview]
 workers_dev = true
 
+routes = [{ pattern = "preview.gingga.com", custom_domain = true }]
+
 [env.preview.vars]
 ALLOW_INDEXING = true
 RESEND_EMAIL_FROM = "Gingga <notifications@gingga.com>"

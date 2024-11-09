@@ -66,6 +66,12 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
 
+      - name: Extract Version ID
+        id: version
+        run: |
+          VERSION_ID=$(echo '${{ steps.deploy.outputs.command-output }}' | grep "Current Version ID:" | cut -d' ' -f4 | cut -d'-' -f1)
+          echo "version_id=$VERSION_ID" >> $GITHUB_OUTPUT
+
       - name: Comment on Pull Request
         uses: thollander/actions-comment-pull-request@v2
         with:
@@ -73,5 +79,5 @@ jobs:
           message: |
             🚀 Preview deployment is ready!
 
-            Worker Preview URL: ${{ steps.deploy.outputs.deployment-url }}
+            Worker Preview URL: https://${{ steps.version.outputs.version_id }}-gingga-preview.jsegoviadev.workers.dev
             Neon Database Branch: https://console.neon.tech/app/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${{ steps.create-branch.outputs.branch_id }}
