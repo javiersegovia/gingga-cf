@@ -46,7 +46,10 @@ export class ProjectService {
   }
 
   public createProject = async (userId: string, productDescription: string) => {
-    const projectData = await generateProjectData(this.env, productDescription)
+    const projectData = await generateProjectData(
+      this.env.OPENROUTER_API_KEY,
+      productDescription,
+    )
 
     const { name, description, mainObjective, metadata } = projectData
 
@@ -69,10 +72,13 @@ export class ProjectService {
         await tx
           .insert(ProjectModules)
           .values(
-            projectData.modules?.map(
-              (module, index) =>
-                module && { ...module, projectId: project.id, order: index },
-            ),
+            projectData.modules?.map((module) => ({
+              name: module.name,
+              description: module.description,
+              additionalInfo: module.additionalInfo,
+              order: module.order,
+              projectId: project.id,
+            })),
           )
           .returning({ id: ProjectModules.id })
       }

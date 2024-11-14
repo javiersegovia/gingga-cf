@@ -1,61 +1,46 @@
 import { useRef, useEffect } from 'react'
 import type { KeyboardEvent } from 'react'
-import { Form, useParams } from '@remix-run/react'
+import { Form, useLocation, useParams } from '@remix-run/react'
 import { useChat } from 'ai/react'
 import { ChatMessage } from './chat-message'
 import { Loader2, Send } from 'lucide-react'
 import { Textarea } from '../ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-// import { ClientOnly } from 'remix-utils'
 import { SelectAIModel } from '../ai/select-ai-model'
-// import { z } from 'zod'
 
 export function Chat() {
   const { toast } = useToast()
   const { projectId } = useParams()
+  const { pathname } = useLocation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } =
-    useChat({
-      api: '/api/chat',
-      streamProtocol: 'data',
-      body: { projectId },
-      // onToolCall() {
-      //   // console.log('tool call!')
-      //   // console.log(event)
-      //   // const { success, data } = z
-      //   //   .object({ toolAction: z.string() })
-      //   //   .safeParse(event.toolCall.args)
-      //   // if (success) {
-      //   //   setToolAction(data.toolAction)
-      //   // } else {
-      //   //   setToolAction(null)
-      //   // }
-      // },
-      onResponse(event) {
-        console.log('response!')
-        console.log(event)
-        scrollToBottom()
-      },
-      onFinish(event) {
-        console.log('finished!')
-        console.log(event)
-      },
-      onError(error) {
-        console.log('error from Chat!')
-        console.log(error)
-        console.log(error.message)
-        toast({
-          title: 'Error',
-          description:
-            typeof error.message === 'object'
-              ? JSON.parse(error.message)
-              : error.message,
-          toastType: 'error',
-          duration: 5000,
-        })
-      },
-    })
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    setMessages,
+  } = useChat({
+    api: '/api/chat',
+    streamProtocol: 'data',
+    body: { projectId },
+    onResponse() {
+      scrollToBottom()
+    },
+    onFinish() {},
+    onError(error) {
+      toast({
+        title: 'Error',
+        description:
+          typeof error.message === 'object'
+            ? JSON.parse(error.message)
+            : error.message,
+        toastType: 'error',
+        duration: 5000,
+      })
+    },
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,6 +49,10 @@ export function Chat() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    setMessages([])
+  }, [pathname, setMessages])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {

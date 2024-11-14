@@ -159,22 +159,18 @@ export async function action({ request, context }: ActionFunctionArgs) {
       },
 
       messages: [
-        ...convertToCoreMessages(messages),
         {
           role: 'system',
           content: systemPrompt,
         },
+        ...convertToCoreMessages(messages),
       ],
 
       maxSteps: 10, // Allow up to 5 steps for tool calls
 
-      // experimental_toolCallStreaming: true,
-
       onStepFinish() {},
       onChunk() {},
-      onFinish() {
-        console.log('onFinish')
-      },
+      onFinish() {},
     })
     const readableStream = result.toDataStream()
 
@@ -183,17 +179,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       transform(chunk, controller) {
         controller.enqueue(chunk)
       },
-      async flush() {
-        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        console.log('Stream flush!')
-        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-      },
-      async cancel(reason) {
-        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        console.log('Stream cancelled:')
-        console.log(reason)
-        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-      },
+      async flush() {},
+      async cancel() {},
     })
 
     // Create a promise that we can await to ensure proper error handling
@@ -203,14 +190,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         preventAbort: true,
         preventClose: false,
       })
-      .then(async () => {
-        console.log('pipeTo finished')
-      })
       .catch(async (_error) => {
-        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        console.log('Stream error:')
-        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        console.log(_error.message)
         await writable.close().catch()
       })
       .catch((error) => {

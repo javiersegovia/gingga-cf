@@ -50,6 +50,13 @@ export const ProjectModuleSchema = z.object({
   additionalInfo: z
     .string()
     .describe('Supplementary information, notes, or context about the module'),
+
+  order: z
+    .number()
+    .int()
+    .default(0)
+    .describe('Order of priority. Starts from zero.'),
+
   generalModuleId: z
     .string()
     .nullable()
