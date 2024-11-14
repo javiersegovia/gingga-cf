@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react'
 import type { KeyboardEvent } from 'react'
 import { Form, useParams } from '@remix-run/react'
 import { useChat } from 'ai/react'
@@ -5,26 +6,64 @@ import { ChatMessage } from './chat-message'
 import { Loader2, Send } from 'lucide-react'
 import { Textarea } from '../ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+// import { ClientOnly } from 'remix-utils'
+import { SelectAIModel } from '../ai/select-ai-model'
+// import { z } from 'zod'
 
 export function Chat() {
   const { toast } = useToast()
   const { projectId } = useParams()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
       api: '/api/chat',
       streamProtocol: 'data',
       body: { projectId },
-      onToolCall() {},
-      onResponse() {},
+      // onToolCall() {
+      //   // console.log('tool call!')
+      //   // console.log(event)
+      //   // const { success, data } = z
+      //   //   .object({ toolAction: z.string() })
+      //   //   .safeParse(event.toolCall.args)
+      //   // if (success) {
+      //   //   setToolAction(data.toolAction)
+      //   // } else {
+      //   //   setToolAction(null)
+      //   // }
+      // },
+      onResponse(event) {
+        console.log('response!')
+        console.log(event)
+        scrollToBottom()
+      },
+      onFinish(event) {
+        console.log('finished!')
+        console.log(event)
+      },
       onError(error) {
+        console.log('error from Chat!')
+        console.log(error)
+        console.log(error.message)
         toast({
           title: 'Error',
-          description: JSON.parse(error.message),
+          description:
+            typeof error.message === 'object'
+              ? JSON.parse(error.message)
+              : error.message,
           toastType: 'error',
           duration: 5000,
         })
       },
     })
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -35,10 +74,15 @@ export function Chat() {
 
   return (
     <div className="flex flex-col flex-1 bg-transparent text-white overflow-hidden">
+      <div className="bg-gray-900 p-2 w-full h-12 flex flex-col justify-center items-end">
+        <SelectAIModel />
+      </div>
+
       <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
         {messages.map((message) => (
           <ChatMessage key={message.id} message={message} />
         ))}
+        <div ref={messagesEndRef} className="mt-auto" />
       </div>
 
       <Form

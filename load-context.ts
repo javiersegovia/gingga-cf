@@ -19,7 +19,9 @@ export type ContextEnv = {
 
 export function getLoadContext(c: Context<ContextEnv>) {
   const cloudflare = {
-    nonce: c.get('secureHeadersNonce'),
+    cf: c.req.raw.cf,
+    ctx: { ...c.executionCtx },
+    caches: globalThis.caches ? caches : undefined,
     env: {
       ...c.env,
       NODE_ENV: process.env.NODE_ENV,
@@ -28,6 +30,7 @@ export function getLoadContext(c: Context<ContextEnv>) {
 
   return {
     cloudflare,
+    nonce: c.get('secureHeadersNonce'),
   }
 }
 

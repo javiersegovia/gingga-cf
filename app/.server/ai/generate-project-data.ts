@@ -1,5 +1,5 @@
 import { ProjectModuleSchema } from '@/schemas/project-schema'
-import { createOpenAI } from '@ai-sdk/openai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { AppLoadContext } from '@remix-run/cloudflare'
 import { generateObject } from 'ai'
 import { z } from 'zod'
@@ -137,12 +137,12 @@ export const generateProjectData = async (
   env: AppLoadContext['cloudflare']['env'],
   productIdea: string,
 ) => {
-  const aiClient = createOpenAI({
-    apiKey: env.OPENAI_API_KEY,
+  const openrouter = createOpenRouter({
+    apiKey: env.OPENROUTER_API_KEY,
   })
 
   const { object: projectData } = await generateObject({
-    model: aiClient('gpt-4o-mini'),
+    model: openrouter('anthropic/claude-3.5-sonnet'),
     prompt: generateProjectDataPrompt(productIdea),
     system: systemPrompt,
     schema: ProjectWithMetadataSchema,
@@ -150,12 +150,3 @@ export const generateProjectData = async (
 
   return projectData
 }
-
-// Updated ProjectModuleSchema to include 'additionalInfo'
-// export const ProjectModuleSchema = z.object({
-//   id: z.string().optional(),
-//   name: z.string(),
-//   description: z.string(),
-//   generalModuleId: z.string().nullable(),
-//   additionalInfo: z.string().nullable(),
-// })

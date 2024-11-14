@@ -1,51 +1,105 @@
 import { requireUserId } from '@/core/auth/auth-utils.server'
 import { json } from '@remix-run/cloudflare'
 import type { ActionFunctionArgs } from '@remix-run/cloudflare'
-import { convertToCoreMessages, streamText, tool, APICallError } from 'ai'
+import { convertToCoreMessages, streamText, APICallError, Message } from 'ai'
 import { z } from 'zod'
-import { createOpenAI } from '@ai-sdk/openai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
+import { SchemaSQLString } from '@/db/schema-sql-string'
+import { queryProjectTool } from '@/.server/ai/tools/query-project-tool'
 
-const systemPrompt = `
-You are an AI assistant specialized in software development and project management.
-You have access to tools that allow you to read and modify project data.
-Your capabilities include:
-- Retrieving information about projects, modules, tasks, and other entities.
-- Updating existing project details and metadata.
-- Confirming critical actions before proceeding.
+const systemPrompt = `You are an AI assistant specialized in software development and project management, with direct access to the project's database through SQL queries.
 
-Guidelines:
-- Use the appropriate tool when the user requests an operation.
-- Ensure all required parameters are provided; ask the user for missing information.
-- Confirm critical actions (like updates) with the user before proceeding.
-- Provide clear and concise responses to the user, summarizing the actions taken.
-- Always ensure data integrity and respect user permissions.
+DATABASE SCHEMA:
+${SchemaSQLString}
 
-Available Tools:
-1. getProjectInfo: Retrieve information about the current project.
+REASONING PROCESS:
+1. First Analysis
+   - Understand the user's request
+   - Identify the specific information being requested
+   - Determine if the request is clear and specific enough
 
-2. getModules: Get a list of all modules in the platform.
+2. Clarification Step
+   - If the request is ambiguous, ask for clarification
+   - Provide specific options based on available data
+   - Example response for unclear requests:
+     "I'd be happy to help! Could you please specify what aspect of the project interests you? I can provide information about:
+      • Project modules and their time estimates
+      • Functionalities and their complexity
+      • Project timeline and milestones
+      • Test cases and acceptance criteria
+      • Technical requirements and constraints"
 
-3. getFunctionalitiesByModuleId: Get a list of all functionalities in a module.
+3. Implementation Planning
+   - Once the request is clear, outline the needed steps
+   - Identify which database tables need to be queried
+   - Determine the most efficient query approach
 
-4. updateProject: Update the project (name, description, main objective, or slug).
-   Requires confirmation
+4. Data Retrieval and Analysis
+   - Execute necessary queries
+   - Process and analyze the retrieved data
+   - Identify patterns or important insights
 
-5. updateProjectMetadata: Update the project metadata (target audience, technology preference, references, constraints, requirements, or additional notes).
-   Requires confirmation
+RESPONSE FORMATTING GUIDELINES:
+1. Structure responses with clear sections using headings when appropriate
+2. Use line breaks (\n) to separate:
+   - Different sections of information
+   - Individual items in lists
+   - Key-value pairs in complex data
+   - Before and after tables or structured data
 
-6. requestConfirmation: Request user confirmation for certain actions.
+3. Format complex data as follows:
+   - Lists: Use bullet points or numbers
+   - Metrics: Include units and context
+   - Dates: Use consistent format
+   - Status information: Highlight important states
 
-7. formatResponse: Format the response to be sent to the user.
+4. When presenting multiple items:
+   - Group related information
+   - Use clear hierarchical structure
+   - Add summary sections for large datasets
 
-Important Notes:
-- For tools that require confirmation (updateProject and updateProjectMetadata), you must use the requestConfirmation tool first and wait for user confirmation before proceeding. Do not call the update tool before confirmation.
-- Always use the formatResponse tool to structure your final response to the user.
-`
+EXAMPLE RESPONSES:
 
+1. For ambiguous requests:
+"I'd be happy to help you learn more about the project! To provide the most relevant information, could you specify what you'd like to know? I can tell you about:\n\n
+• 📦 Modules and their implementation details
+• 🛠 Functionalities and features
+• ⏱ Time estimates and complexity metrics
+• 📋 Project timeline and milestones
+• ✅ Test cases and acceptance criteria\n\n
+Please let me know which aspect interests you!"
+
+2. For specific requests:
+"Here's the module information you requested:\n\n
+📦 **User Authentication**
+   • Estimated Hours: 24
+   • Complexity: High
+   • Functionalities: 5\n\n
+📦 **Dashboard**
+   • Estimated Hours: 16
+   • Complexity: Medium
+   • Functionalities: 3\n\n
+**Summary:** 2 modules, 40 total hours estimated"
+
+QUERY GUIDELINES:
+- Always verify the project_id parameter is included
+- Use appropriate joins when relating data
+- Limit result sets to manageable sizes
+- Include relevant identifying columns
+- Format timestamps and arrays appropriately
+
+Remember to:
+1. Never assume what the user wants - ask for clarification when needed
+2. Explain your reasoning when providing insights
+3. Highlight important patterns or concerns
+4. Provide context when sharing metrics
+5. Always response in the same language as the user's request`
+
+type ChatMessage = z.ZodType<Pick<Message, 'role' | 'content' | 'data'>>
 const ChatSchema = z.object({
-  messages: z.array(
+  messages: z.array<ChatMessage>(
     z.object({
-      role: z.enum(['system', 'user', 'assistant', 'tool']),
+      role: z.enum(['system', 'user', 'assistant', 'data']),
       content: z.string(),
       data: z.any().optional(),
     }),
@@ -57,7 +111,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
   await requireUserId(request, context)
 
   const response = await request.json()
-
   const parsedResponse = ChatSchema.safeParse(response)
 
   if (!parsedResponse.success) {
@@ -70,27 +123,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
     where: (projects, { eq }) => eq(projects.id, projectId),
     columns: {
       id: true,
-      name: true,
-      description: true,
-      mainObjective: true,
-      specificObjectives: true,
-    },
-    with: {
-      modules: {
-        columns: {
-          id: true,
-          name: true,
-          description: true,
-        },
-        with: {
-          functionalities: {
-            columns: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      },
     },
   })
 
@@ -98,150 +130,119 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const openai = createOpenAI({
-    apiKey: context.cloudflare.env.OPENAI_API_KEY,
+  const openrouter = createOpenRouter({
+    apiKey: context.cloudflare.env.OPENROUTER_API_KEY,
   })
+
+  // const { queryModulesTool, queryFunctionalitiesTool, queryTimelineTool } =
+  //   createProjectQueryTools({
+  //     db: context.db,
+  //     projectId: project.id,
+  //   })
+
+  const defaultModelId = 'openai/gpt-4o-mini'
 
   try {
     const result = await streamText({
-      model: openai('gpt-3.5-turbo'),
+      model: openrouter(defaultModelId),
       abortSignal: request.signal,
-      system: systemPrompt,
       tools: {
-        getProjectInfo: tool({
-          description: 'Get information about the current project',
-          parameters: z.object({
-            infoType: z.enum(['general', 'objectives', 'modules', 'tasks']),
-          }),
-          execute: async ({ infoType }) => {
-            try {
-              switch (infoType) {
-                case 'general':
-                  return {
-                    success: true,
-                    description:
-                      'General project information retrieved successfully',
-                    data: {
-                      name: project.name,
-                      description: project.description,
-                      mainObjective: project.mainObjective,
-                    },
-                  }
-                case 'objectives':
-                  return {
-                    success: true,
-                    description: 'Project objectives retrieved successfully',
-                    data: {
-                      mainObjective: project.mainObjective,
-                      specificObjectives: project.specificObjectives,
-                    },
-                  }
-                case 'modules':
-                  return {
-                    success: true,
-                    description: 'Project modules retrieved successfully',
-                    data: project.modules,
-                  }
-                case 'tasks':
-                  return {
-                    success: true,
-                    description: 'Project tasks retrieved successfully',
-                    data: project.modules.flatMap(
-                      (module) => module.functionalities,
-                    ),
-                  }
-                default:
-                  return {
-                    success: false,
-                    description: 'Invalid info type',
-                    error: 'Invalid info type provided',
-                  }
-              }
-            } catch (error) {
-              console.error('Error retrieving project info:', error)
-              return {
-                success: false,
-                description: 'Failed to retrieve project information',
-                error: error instanceof Error ? error.message : 'Unknown error',
-              }
-            }
-          },
-        }),
-        getModules: tool({
-          description: 'Get a list of all project modules.',
-          parameters: z.object({}),
-          execute: async () => {
-            return project.modules
-          },
-        }),
-        getFunctionalitiesByModuleId: tool({
-          description: 'Get a list of all functionalities in a project module.',
-          parameters: z.object({
-            moduleId: z.string(),
-          }),
-          execute: async ({ moduleId }) => {
-            return project.modules.find((module) => module.id === moduleId)
-              ?.functionalities
-          },
-        }),
+        // queryModulesTool,
+        // queryFunctionalitiesTool,
+        // queryTimelineTool,
 
-        formatResponse: tool({
-          description:
-            'Format the response to be sent to the user. This is always the last tool called in the conversation. In this response, you should summarize all the "tools" you used.',
-          parameters: z.object({ message: z.string() }),
+        queryProjectTool: queryProjectTool({
+          db: context.db,
+          projectId,
+          apiKey: context.cloudflare.env.OPENAI_API_KEY,
         }),
       },
+
       messages: [
+        ...convertToCoreMessages(messages),
         {
           role: 'system',
-          content:
-            'You are an AI assistant helping with software development questions. ' +
-            'You have access to information about the current project. ' +
-            'Use the getProjectInfo tool to fetch relevant information when needed. ' +
-            'For certain actions, use the requestConfirmation tool to ask for user confirmation before proceeding.',
+          content: systemPrompt,
         },
-        ...convertToCoreMessages(messages),
       ],
-      maxSteps: 5, // Allow up to 5 steps for tool calls
-      experimental_toolCallStreaming: true,
-      onFinish(event) {
-        console.log(event.usage)
-        const totalTokens = event.usage?.totalTokens || 0
 
-        console.log(`Total Tokens Used: ${totalTokens}`)
+      maxSteps: 10, // Allow up to 5 steps for tool calls
 
-        // GPT-3.5 Turbo: $0.002 per 1K tokens
-        const gpt35Cost = (totalTokens / 1000) * 0.002
-        console.log(`GPT-3.5 Turbo: $${gpt35Cost.toFixed(4)} USD`)
+      // experimental_toolCallStreaming: true,
 
-        // Claude 3 Sonnet: $0.003 per 1K tokens (estimated)
-        const claudeCost = (totalTokens / 1000) * 0.003
-        console.log(`Claude 3 Sonnet: $${claudeCost.toFixed(4)} USD`)
-
-        // GPT-4: $0.03 per 1K tokens
-        const gpt4Cost = (totalTokens / 1000) * 0.03
-        console.log(`GPT-4: $${gpt4Cost.toFixed(4)} USD`)
-
-        // Anthropic's Claude 2: $0.01102 per 1K tokens
-        const claude2Cost = (totalTokens / 1000) * 0.01102
-        console.log(`Claude 2: $${claude2Cost.toFixed(4)} USD`)
-
-        // OpenAI's GPT-4 Turbo: $0.01 per 1K tokens
-        const gpt4TurboCost = (totalTokens / 1000) * 0.01
-        console.log(`GPT-4 Turbo: $${gpt4TurboCost.toFixed(4)} USD`)
+      onStepFinish() {},
+      onChunk() {},
+      onFinish() {
+        console.log('onFinish')
       },
-      // onStepFinish(event) {
-      // console.log('onStepFinish')
-      // console.log(event)
-      // },
+    })
+    const readableStream = result.toDataStream()
+
+    // Create a TransformStream to handle errors
+    const { readable, writable } = new TransformStream({
+      transform(chunk, controller) {
+        controller.enqueue(chunk)
+      },
+      async flush() {
+        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        console.log('Stream flush!')
+        console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+      },
+      async cancel(reason) {
+        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        console.log('Stream cancelled:')
+        console.log(reason)
+        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+      },
     })
 
-    const controller = new AbortController()
-    request.signal.addEventListener('abort', () => {
-      controller.abort()
-    })
+    // Create a promise that we can await to ensure proper error handling
+    readableStream
+      .pipeTo(writable, {
+        signal: request.signal, // Add abort signal
+        preventAbort: true,
+        preventClose: false,
+      })
+      .then(async () => {
+        console.log('pipeTo finished')
+      })
+      .catch(async (_error) => {
+        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        console.log('Stream error:')
+        console.error('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+        console.log(_error.message)
+        await writable.close().catch()
+      })
+      .catch((error) => {
+        let message = 'An unknown error occurred'
 
-    return result.toDataStreamResponse()
+        // todo: Handle different error types from AI SDK
+        if (APICallError.isInstance(error)) {
+          const AICallDataErrorSchema = z.object({
+            data: z.object({
+              error: z.object({
+                message: z.string(),
+              }),
+            }),
+          })
+
+          const parsedError = AICallDataErrorSchema.safeParse(error)
+
+          if (parsedError.success) {
+            console.log('Error inside AI SDK')
+            message = parsedError.data.data.error.message
+          }
+
+          throw json(message, {
+            status: 500,
+          })
+        }
+      })
+      .catch((_error) => {
+        console.error('Final error handler:')
+      })
+
+    return new Response(readable)
   } catch (error) {
     let message = 'An unknown error occurred'
 
@@ -258,7 +259,10 @@ export async function action({ request, context }: ActionFunctionArgs) {
       const parsedError = AICallDataErrorSchema.safeParse(error)
 
       if (parsedError.success) {
+        console.log('Error inside AI SDK')
         message = parsedError.data.data.error.message
+      } else {
+        console.log(error.message)
       }
     }
 

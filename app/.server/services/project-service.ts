@@ -1,7 +1,7 @@
 import type { ProjectUpdate } from '@/schemas/project-schema'
 import { ProjectModules, Projects } from '@/db/schema'
 import type { ModuleTime, ProjectFunctionalities } from '@/db/schema'
-import { eq, and, isNull, desc, or, ilike, count } from 'drizzle-orm'
+import { eq, and, isNull, desc, or, ilike } from 'drizzle-orm'
 import { generateProjectData } from '@/.server/ai/generate-project-data'
 import { AppLoadContext } from '@remix-run/cloudflare'
 

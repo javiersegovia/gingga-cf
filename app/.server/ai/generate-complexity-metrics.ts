@@ -185,12 +185,12 @@ export async function generateComplexityMetrics(
     cloudflare: { env },
   } = context
 
-  const aiClient = createOpenAI({
+  const openai = createOpenAI({
     apiKey: env.OPENAI_API_KEY,
   })
 
   const { object: assessment } = await generateObject({
-    model: aiClient('gpt-4o-mini'),
+    model: openai('gpt-4o-mini'),
     schema: AssessmentSchema,
     prompt,
   })

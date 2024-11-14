@@ -56,8 +56,6 @@ const formId = 'general-information'
 
 export const GeneralInformationBlockWithQuery = () => {
   const params = useParams()
-  if (!params.projectId) return null
-
   const { data } = useProjectQuery(params.projectId)
   if (!data?.project) return null
 
@@ -112,7 +110,7 @@ export const GeneralInformationBlock = ({
   })
 
   return (
-    <div className="">
+    <div className="text-neutral-200">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="p-2 border border-gray-700 rounded-xl">

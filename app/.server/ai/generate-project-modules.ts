@@ -100,12 +100,12 @@ export async function generateProjectModules(
     generalModules,
   })
 
-  const aiClient = createOpenAI({
+  const openai = createOpenAI({
     apiKey: context.cloudflare.env.OPENAI_API_KEY,
   })
 
   const { object: projectModules } = await generateObject({
-    model: aiClient('gpt-3.5-turbo'),
+    model: openai('gpt-4o-mini'),
     prompt: userPrompt,
     system: systemPrompt,
     output: 'array',

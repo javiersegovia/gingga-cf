@@ -1,13 +1,7 @@
-import { useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,151 +10,41 @@ import {
 import { ChevronDown, ChevronUp, User, Bot } from 'lucide-react'
 import type { Message, ToolInvocation } from 'ai'
 import { cn } from '@/core/utils'
-import { z } from 'zod'
 import Markdown from 'react-markdown'
+import {
+  CustomToolResponse,
+  CustomToolResponseSchema,
+} from '@/schemas/tools-schema'
 
-// import { type ToolResponseData, ToolResponseDataSchema } from '@/routes/api+/_chat-tools'
-
-// type ToolInvocation = {
-//   name: string
-//   arguments: Record<string, any>
-//   output: any
-// }
-
-// type Message = {
-//   role: 'user' | 'assistant' | 'system' | 'tool' | 'function' | 'data'
-//   content: string
-//   toolInvocations?: ToolInvocation[]
-// }
-
-export const ToolResponseDataSchema = z.object({
-  success: z.boolean(),
-  description: z.string(),
-  error: z.string().optional(),
-  data: z.any().optional(),
-})
-
-export type ToolResponseData = z.infer<typeof ToolResponseDataSchema>
-
-type ChatMessageProps = {
-  message: Message
+interface ToolCardProps {
+  data: CustomToolResponse
 }
 
-type BasicToolCardProps = {
-  result: ToolResponseData
-}
+const ToolCard = ({ data }: ToolCardProps) => {
+  const { result, error } = data
 
-const BasicToolCard = ({ result }: BasicToolCardProps) => {
   return (
-    <Card className="mt-2 bg-gray-900 border-gray-700 text-background">
+    <Card className="mt-2 bg-gray-900 border-gray-700">
       <CardHeader>
-        <CardDescription className="text-gray-400">
-          {result.description}
-        </CardDescription>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </CardHeader>
-      <CardContent>
-        <pre className="whitespace-pre-wrap bg-gray-950 text-gray-300 text-sm rounded-xl p-4 overflow-x-auto">
-          {JSON.stringify(result.data, null, 2)}
-        </pre>
-      </CardContent>
-    </Card>
-  )
-}
 
-type UpdateProjectToolProps = {
-  result: ToolResponseData
-}
-
-const UpdateProjectTool = ({ result }: UpdateProjectToolProps) => (
-  <Card className="mt-2">
-    <CardHeader>
-      <CardTitle>{result.description}</CardTitle>
-      <CardDescription>{result.description}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      {result.success ? (
-        <pre className="whitespace-pre-wrap text-sm">
-          {JSON.stringify(result.data, null, 2)}
-        </pre>
-      ) : (
-        <p className="text-red-500">{result.error}</p>
+      {result && (
+        <CardContent>
+          <pre className="whitespace-pre-wrap bg-gray-950 text-gray-300 text-sm rounded-xl p-4 overflow-x-auto">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </CardContent>
       )}
-    </CardContent>
-  </Card>
-)
-
-type ConfirmationToolProps = {
-  result: ToolResponseData
-}
-
-const ConfirmationTool = ({ result }: ConfirmationToolProps) => {
-  // TODO: Add a form to confirm the action using useFetcher
-  return (
-    <Card className="mt-2">
-      <CardHeader>
-        <CardTitle>{result.description}</CardTitle>
-        <CardDescription>{result.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p>{result.data?.details}</p>
-        <div className="mt-4 flex gap-2">
-          <Button variant="default">Confirm</Button>
-          <Button variant="outline">Cancel</Button>
-        </div>
-      </CardContent>
     </Card>
   )
 }
 
-const ToolMessageLoading = ({
-  className,
-  children,
-}: {
-  className?: string
-  children: React.ReactNode
-}) => (
-  <div
-    className={cn(
-      'relative text-yellow-400/80 font-normal text-sm animate-pulse overflow-hidden rounded-lg p-2',
-      className,
-    )}
-  >
-    <p className="relative">{children}</p>
+const ToolMessageLoading = ({ children }: PropsWithChildren) => (
+  <div className="text-yellow-400/80 font-normal text-sm animate-pulse p-2">
+    {children}
   </div>
 )
-
-const ToolsMap = {
-  getProjectInfo: {
-    component: BasicToolCard,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Fetching project info...',
-  },
-  getModules: {
-    component: BasicToolCard,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Fetching modules...',
-  },
-  getFunctionalitiesByModuleId: {
-    component: BasicToolCard,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Fetching functionalities...',
-  },
-  updateProject: {
-    component: UpdateProjectTool,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Updating project...',
-  },
-  updateProjectMetadata: {
-    component: BasicToolCard,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Updating project metadata...',
-  },
-  requestConfirmation: {
-    component: ConfirmationTool,
-    loading: ToolMessageLoading,
-    loadingMessage: 'Requesting confirmation...',
-  },
-}
 
 const ToolMessage = ({
   toolInvocation,
@@ -169,42 +53,32 @@ const ToolMessage = ({
 }) => {
   const isLoading =
     toolInvocation.state === 'partial-call' || toolInvocation.state === 'call'
-  const tool = ToolsMap[toolInvocation.toolName as keyof typeof ToolsMap]
 
-  if (!tool) {
-    return null
-  }
-
-  const {
-    component: ToolComponent,
-    loading: LoadingComponent,
-    loadingMessage,
-  } = tool
+  console.log('toolInvocation')
+  console.log(toolInvocation)
 
   if (isLoading) {
     return (
-      <LoadingComponent className="text-gray-300">
-        {loadingMessage}
-      </LoadingComponent>
+      <ToolMessageLoading>
+        Processing {toolInvocation.toolName}...
+      </ToolMessageLoading>
     )
   }
 
   const toolResponse =
     'result' in toolInvocation
-      ? ToolResponseDataSchema.safeParse(toolInvocation.result)
+      ? CustomToolResponseSchema.safeParse(toolInvocation.result)
       : null
+
   if (!toolResponse?.success) {
-    return <div>Error parsing tool response data</div>
+    return <div>Error processing tool response</div>
   }
 
-  return <ToolComponent result={toolResponse.data} />
+  return <ToolCard data={toolResponse.data} />
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message }: { message: Message }) {
   const [isExpanded, setIsExpanded] = useState(false)
-
-  // const toggleExpand = () => setIsExpanded(!isExpanded)
-
   const isLoading = message.toolInvocations?.some(
     (invocation) =>
       invocation.state === 'partial-call' || invocation.state === 'call',
@@ -239,26 +113,15 @@ export function ChatMessage({ message }: ChatMessageProps) {
             className="space-y-4 p-0 text-sm"
             components={{
               ol: ({ children }) => (
-                <ol className="p-4 bg-gray-900 space-y-2 mt-2 pl-10 rounded-xl list-decimal">
-                  {children}
-                </ol>
+                <ol className="list-decimal space-y-4 pl-4">{children}</ol>
               ),
-              ul: ({ children }) => (
-                <ul className="p-4 bg-gray-900 border-gray-700 space-y-2 mt-2 rounded-xl">
-                  {children}
-                </ul>
-              ),
-              li: ({ children }) => <li className="list-item">{children}</li>,
             }}
           >
             {message.content}
           </Markdown>
+
           {message.toolInvocations && message.toolInvocations.length > 0 && (
-            <Collapsible
-              open={isExpanded}
-              onOpenChange={setIsExpanded}
-              className="py-0"
-            >
+            <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
@@ -271,20 +134,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     <ChevronDown size={16} />
                   )}
                   {isLoading ? (
-                    <ToolMessageLoading>
-                      Generating response...
-                    </ToolMessageLoading>
+                    <span className="ml-2 text-xs">Processing...</span>
                   ) : (
                     <span className="ml-2 text-xs text-gray-300">Details</span>
                   )}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent
-                className={cn(
-                  'm-0 space-y-2 overflow-hidden transition-all duration-300 ease-in-out',
-                  isExpanded ? 'max-h-none opacity-100' : 'max-h-0 opacity-0',
-                )}
-              >
+
+              <CollapsibleContent>
                 {message.toolInvocations.map((toolInvocation) => (
                   <ToolMessage
                     key={toolInvocation.toolName}
