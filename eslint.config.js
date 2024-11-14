@@ -105,6 +105,16 @@ export default [
       'import/no-self-import': 'error',
 
       '@typescript-eslint/no-empty-object-type': 'off',
+
+      // Add rule for unused variables, allowing underscore-prefixed args
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 ]

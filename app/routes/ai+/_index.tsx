@@ -9,7 +9,6 @@ import { Form, useActionData } from '@remix-run/react'
 import { FormProvider, useForm } from '@conform-to/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { Spacer } from '@/components/ui/spacer'
-import { FlickeringGrid } from '@/components/ui/flickering-grid'
 import { z } from 'zod'
 import { H1 } from '@/components/ui/typography'
 import { SparklesIcon } from 'lucide-react'
@@ -70,9 +69,7 @@ export default function GinggaLandingPage() {
   })
 
   return (
-    <div className="flex items-stretch w-full bg-gray-950 min-h-screen">
-      <FlickeringGrid />
-
+    <div className="flex items-stretch w-full bg-black min-h-screen">
       <div className="w-full flex flex-col justify-center items-center relative">
         <Hero />
 

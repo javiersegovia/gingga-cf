@@ -3,7 +3,6 @@ import { Sidebar } from '@/components/sidebar'
 import type { LoaderFunctionArgs } from '@remix-run/cloudflare'
 import { json } from '@remix-run/cloudflare'
 import { requireUserId } from '@/core/auth/auth-utils.server'
-import { FlickeringGrid } from '@/components/ui/flickering-grid'
 import { ProjectService } from '@/.server/services/project-service'
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -20,8 +19,6 @@ export default function AILayout() {
 
   return (
     <div className="flex h-screen bg-gray-900 text-white relative">
-      <FlickeringGrid />
-
       <Sidebar projects={projects} />
 
       <main className="flex-1 overflow-auto z-10">

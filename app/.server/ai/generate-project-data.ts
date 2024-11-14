@@ -1,6 +1,5 @@
 import { ProjectModuleSchema } from '@/schemas/project-schema'
-import { createOpenAI } from '@ai-sdk/openai'
-import { AppLoadContext } from '@remix-run/cloudflare'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 
@@ -25,7 +24,6 @@ When analyzing the project description, you should:
   - For each module, provide:
     - **Name**: The name of the module.
     - **Description**: A brief description of the module's functionality.
-    - **General Module ID**: If applicable, reference to a general module ID or parent module. Use null if not applicable.
     - **Additional Info**: Any additional context that may be relevant to future development or AI processing.
 
 - **Provide Organized Output**:
@@ -79,8 +77,8 @@ From this description, please extract and provide comprehensive information focu
    - For each module, provide:
      - **Name**: The name of the module.
      - **Description**: A brief description of the module's functionality.
-     - **General Module ID**: If applicable, reference to a general module ID or parent module. Use null if not applicable.
      - **Additional Info**: Any additional context that may be relevant to future development or AI processing.
+     - **Order**: The order of priority. Starts from zero.
    - Present the modules as an array in JSON format.
 
    Modules example:
@@ -89,14 +87,14 @@ From this description, please extract and provide comprehensive information focu
      {
        "name": "User Authentication",
        "description": "Handles user sign-up, login, and authentication processes.",
-       "generalModuleId": null,
-       "additionalInfo": "Implement OAuth 2.0 for social logins in future phases."
+       "additionalInfo": "Implement OAuth 2.0 for social logins in future phases.",
+       "order": 0
      },
      {
        "name": "User Dashboard",
        "description": "Displays user-specific data and settings.",
-       "generalModuleId": "User Authentication",
-       "additionalInfo": "Consider scalability for displaying real-time data."
+       "additionalInfo": "Consider scalability for displaying real-time data.",
+       "order": 1
      }
    ]
    """
@@ -134,15 +132,15 @@ export const ProjectWithMetadataSchema = z.object({
 })
 
 export const generateProjectData = async (
-  env: AppLoadContext['cloudflare']['env'],
+  apiKey: string,
   productIdea: string,
 ) => {
-  const aiClient = createOpenAI({
-    apiKey: env.OPENAI_API_KEY,
+  const openrouter = createOpenRouter({
+    apiKey,
   })
 
   const { object: projectData } = await generateObject({
-    model: aiClient('gpt-4o-mini'),
+    model: openrouter('anthropic/claude-3.5-sonnet'),
     prompt: generateProjectDataPrompt(productIdea),
     system: systemPrompt,
     schema: ProjectWithMetadataSchema,
@@ -150,12 +148,3 @@ export const generateProjectData = async (
 
   return projectData
 }
-
-// Updated ProjectModuleSchema to include 'additionalInfo'
-// export const ProjectModuleSchema = z.object({
-//   id: z.string().optional(),
-//   name: z.string(),
-//   description: z.string(),
-//   generalModuleId: z.string().nullable(),
-//   additionalInfo: z.string().nullable(),
-// })

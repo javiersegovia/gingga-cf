@@ -260,7 +260,7 @@ export async function generateProjectTimeline(
   context: AppLoadContext,
   projectId: string,
 ) {
-  const { db, cloudflare } = context
+  const { db } = context
 
   const project = await db.query.Projects.findFirst({
     where: (p, { eq }) => eq(p.id, projectId),
@@ -345,13 +345,13 @@ export async function generateProjectTimeline(
     timelineData,
   })
 
-  const aiClient = createOpenAI({
+  const openai = createOpenAI({
     apiKey: context.cloudflare.env.OPENAI_API_KEY,
   })
 
   // Call the AI model
   const { object: projectTimeline } = await generateObject({
-    model: aiClient('gpt-4o'),
+    model: openai('gpt-4o'),
     prompt: userPrompt,
     system: systemPrompt,
     output: 'object',

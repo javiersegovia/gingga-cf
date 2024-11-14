@@ -13,7 +13,7 @@ import type { ContextEnv } from './load-context'
 import ws from 'ws'
 
 const app = new Hono<ContextEnv>()
-let handler: RequestHandler | undefined
+let handler: RequestHandler
 
 config({ path: '.dev.vars' })
 
@@ -60,13 +60,15 @@ app.use('*', async (c, next) => {
   })(c, next)
 })
 
-// TODO - Implement a proper healthcheck with db connection and alerts
-app.get('/resources/healthcheck', (c) => {
-  return c.text('ok')
-})
-
 // TODO - Implement Rate limiting
 // https://github.com/rhinobase/hono-rate-limiter
+// TODO - Implement a proper healthcheck with db connection and alerts
+
+app.onError((err, c) => {
+  console.log('Error in server middleware')
+  console.error(err)
+  return c.text('Error in server middleware')
+})
 
 app.use('*', async (c, next) => {
   /**
@@ -76,11 +78,10 @@ app.use('*', async (c, next) => {
   if (typeof WebSocket === 'undefined') {
     neonConfig.webSocketConstructor = ws
   }
-
   const client = new Client(c.env.DATABASE_URL)
-
   await client.connect()
   const db = drizzle(client, { schema })
+  const closeDbConnection = () => c.executionCtx.waitUntil(client.end())
 
   const remixContext = {
     ...getLoadContext(c),
@@ -88,6 +89,8 @@ app.use('*', async (c, next) => {
   }
 
   try {
+    let response: Response
+
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
       // @ts-ignore
       const serverBuild = await import('./build/server')
@@ -98,9 +101,7 @@ app.use('*', async (c, next) => {
         getLoadContext: () => remixContext,
       })
 
-      const response = await remixHandler(c, next)
-      c.executionCtx.waitUntil(client.end())
-      return response
+      response = (await remixHandler(c, next)) as Response
     } else {
       if (!handler) {
         // @ts-expect-error it's not typed
@@ -109,11 +110,29 @@ app.use('*', async (c, next) => {
         handler = createRequestHandler(build, 'development')
       }
 
-      const response = await handler(c.req.raw, remixContext)
-      c.executionCtx.waitUntil(client.end())
-      return response
+      response = await handler(c.req.raw, remixContext)
     }
+
+    /**
+     * This is needed to ensure the database connection is closed
+     * after the response is sent
+     */
+    if (response?.body && response.body instanceof ReadableStream) {
+      const transformStream = new TransformStream({
+        flush: () => closeDbConnection(),
+      })
+
+      return new Response(response.body?.pipeThrough(transformStream), {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+
+    closeDbConnection()
+    return response
   } catch (error: unknown) {
+    closeDbConnection()
     console.error(error)
     return c.text('Error in server.ts')
   }

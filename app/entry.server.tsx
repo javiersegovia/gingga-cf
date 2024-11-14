@@ -26,7 +26,7 @@ export default async function handleRequest(
 
   loadContext: AppLoadContext,
 ) {
-  const nonce = loadContext.cloudflare.nonce ?? ''
+  const nonce = loadContext.nonce ?? ''
 
   let didError = false
   const newHeaders = new Headers(responseHeaders)

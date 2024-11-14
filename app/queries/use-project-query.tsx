@@ -11,7 +11,11 @@ import type {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UseQueryOptions } from '@tanstack/react-query'
 
-const getProject = async (projectId: string) => {
+const getProject = async (projectId?: string) => {
+  if (!projectId) {
+    throw new Error('Project ID is required')
+  }
+
   const response = await fetch(`/api/projects/${projectId}`)
   if (!response.ok) {
     throw new Error('Failed to fetch project')
@@ -19,13 +23,13 @@ const getProject = async (projectId: string) => {
   return (await response.json()) as GetProjectResponse
 }
 
-export const getProjectQueryKey = (projectId: string) => ['project', projectId]
+export const getProjectQueryKey = (projectId?: string) => ['project', projectId]
 
 export type GetProjectResponse = Awaited<
   ReturnType<Awaited<ReturnType<typeof projectAPILoader>>['json']>
 >
 
-export const useProjectQuery = (projectId: string) =>
+export const useProjectQuery = (projectId?: string) =>
   useQuery<GetProjectResponse>({
     queryKey: getProjectQueryKey(projectId),
     queryFn: () => getProject(projectId),

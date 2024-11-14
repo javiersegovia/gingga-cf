@@ -80,10 +80,6 @@ export default function AIWizardLayout() {
   return (
     <>
       <div className="flex items-stretch h-screen overflow-hidden w-full divide-x divide-gray-800">
-        <div className="w-2/5 flex bg-black">
-          <Chat />
-        </div>
-
         <div className="w-3/5 flex-1 flex flex-col relative bg-black/50">
           {showTimeline ? (
             <>
@@ -147,6 +143,10 @@ export default function AIWizardLayout() {
             </Button>
             {/* </Link> */}
           </div>
+        </div>
+
+        <div className="w-2/5 flex flex-col bg-black/70">
+          <Chat />
         </div>
       </div>
     </>

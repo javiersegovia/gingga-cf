@@ -22,7 +22,7 @@ export function ProjectOverview({ projectStats }: ProjectOverviewProps) {
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-2 gap-2 z-10">
+      <div className="grid grid-cols-2 gap-2 z-10 text-neutral-400">
         <Tooltip delayDuration={200}>
           <TooltipTrigger asChild>
             <div
@@ -34,9 +34,7 @@ export function ProjectOverview({ projectStats }: ProjectOverviewProps) {
               )}
             >
               <PackageIcon className="text-pink-500 w-5 h-5" />
-              {totalModules > 0 && (
-                <span className="text-white">{totalModules}</span>
-              )}
+              {totalModules > 0 && <span>{totalModules}</span>}
             </div>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs" side="bottom">
@@ -55,9 +53,7 @@ export function ProjectOverview({ projectStats }: ProjectOverviewProps) {
               )}
             >
               <HardDrive className="text-yellow-400 w-5 h-5" />
-              {totalFunctionalities > 0 && (
-                <span className="text-white">{totalFunctionalities}</span>
-              )}
+              {totalFunctionalities > 0 && <span>{totalFunctionalities}</span>}
             </div>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs" side="bottom">
@@ -76,9 +72,7 @@ export function ProjectOverview({ projectStats }: ProjectOverviewProps) {
               )}
             >
               <Clock className="text-emerald-400 w-5 h-5" />
-              {!!totalEstimatedHours && (
-                <span className="text-gray-400">{totalEstimatedHours}h</span>
-              )}
+              {!!totalEstimatedHours && <span>{totalEstimatedHours}h</span>}
             </div>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs space-y-2" side="bottom">
@@ -97,9 +91,7 @@ export function ProjectOverview({ projectStats }: ProjectOverviewProps) {
               )}
             >
               <Brain className="text-sky-400 w-5 h-5" />
-              {!!complexityMetricScore && (
-                <span className="text-gray-400">{complexityMetricScore}</span>
-              )}
+              {!!complexityMetricScore && <span>{complexityMetricScore}</span>}
             </div>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs space-y-2" side="bottom">

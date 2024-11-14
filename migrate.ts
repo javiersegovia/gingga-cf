@@ -5,6 +5,10 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 
 config({ path: '.dev.vars' })
 
+if (!process.env.DIRECT_DB_URL) {
+  throw new Error('DIRECT_DB_URL is not set')
+}
+
 const db = drizzle(
   postgres(`${process.env.DIRECT_DB_URL}`, { ssl: 'require', max: 1 }),
 )
