@@ -29,24 +29,37 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v8
 
-      - name: Create Database
+      - name: Create Turso Database Branch
         id: create-db
-        uses: tursodatabase/create-database-action@v1
-        with:
-          organization_name: ${{ secrets.TURSO_ORGANIZATION_NAME }}
-          api_token: ${{ secrets.TURSO_AUTH_TOKEN }}
-          existing_database_name: ${{ secrets.TURSO_DATABASE_NAME }}
-          new_database_name: 'preview-${{ steps.branch-name.outputs.current_branch }}'
+        run: |
+          RESPONSE=$(curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.TURSO_AUTH_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{"name": "preview-${{ github.sha }}", "group": "default", "seed": {"type": "database", "name": "${{ secrets.TURSO_DATABASE_NAME }}"} }' \
+          "https://api.turso.tech/v1/organizations/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases")
+
+          if [ $? -ne 0 ]; then
+            echo "API call failed"
+            exit 1
+          fi
+
+          HOSTNAME=$(echo $RESPONSE | jq -r '.database.Hostname')
+          if [ -z "$HOSTNAME" ]; then
+            echo "Hostname not found in response"
+            exit 1
+          fi
+
+          echo "hostname=$HOSTNAME" >> $GITHUB_ENV
 
       - name: Build
         run: pnpm run build
         env:
-          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
+          TURSO_DB_URL: ${{ env.hostname }}
 
       - name: Run Migrations
         run: pnpm run db:migrate
         env:
-          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
+          TURSO_DB_URL: ${{ env.hostname }}
 
       - name: Deploy to Workers Preview
         uses: cloudflare/wrangler-action@v3
@@ -59,7 +72,7 @@ jobs:
           secrets: |
             TURSO_DB_URL
         env:
-          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
+          TURSO_DB_URL: ${{ env.hostname }}
 
       - name: Extract Version ID
         id: version
