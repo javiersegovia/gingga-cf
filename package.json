@@ -27,7 +27,6 @@
     "@hono/sentry": "^1.2.0",
     "@hookform/resolvers": "^3.9.1",
     "@libsql/client": "^0.14.0",
-    "@neondatabase/serverless": "^0.10.1",
     "@openrouter/ai-sdk-provider": "^0.0.6",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-accordion": "^1.2.1",

@@ -202,7 +202,9 @@ export const Projects = sqliteTable('projects', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   mainObjective: text('main_objective').notNull(),
-  specificObjectives: text('specific_objectives').notNull(),
+  specificObjectives: text('specific_objectives', { mode: 'json' }).$type<
+    string[]
+  >(),
   metadata: text('metadata', { mode: 'json' }),
 })
 
@@ -227,7 +229,9 @@ export const ProjectFunctionalities = sqliteTable('project_functionalities', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   type: text('type', { enum: projectFunctionalityType }).notNull(),
-  acceptanceCriteria: text('acceptance_criteria', { mode: 'json' }),
+  acceptanceCriteria: text('acceptance_criteria', { mode: 'json' }).$type<
+    string[]
+  >(),
   projectId: text('project_id')
     .notNull()
     .references(() => Projects.id, {

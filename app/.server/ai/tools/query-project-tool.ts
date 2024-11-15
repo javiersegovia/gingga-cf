@@ -6,19 +6,22 @@ import { sql } from 'drizzle-orm'
 import { CustomToolResponse } from '@/schemas/tools-schema'
 import { AppLoadContext } from '@remix-run/cloudflare'
 
-const systemPrompt = `You are a SQL (postgres) expert specialized in safe, efficient querying. Your job is to write SQL queries that return structured data for further AI processing. The table schema is as follows:
+const getSystemPrompt = (
+  projectId: string,
+) => `You are a SQL (SQLite) expert specialized in safe, efficient querying. Your job is to write SQL queries that return structured data for further AI processing. The table schema is as follows:
 
 ${SchemaSQLString}
 
 STRICT QUERY GUIDELINES:
 1. ONLY retrieval queries (SELECT) are allowed
-2. ALWAYS include WHERE project_id = :projectId
-3. LIMIT results to 100 rows maximum
-4. AVOID complex joins unless absolutely necessary
-5. PREFER simple queries over complex ones
-6. NEVER use SELECT *
-7. ALWAYS alias tables and columns clearly
-8. INCLUDE relevant ID columns for relationships
+2. ALWAYS include WHERE project_id = ${projectId}
+3. ONLY retrieve data related to the project with id: ${projectId}
+4. LIMIT results to 100 rows maximum
+5. AVOID complex joins unless absolutely necessary
+6. PREFER simple queries over complex ones
+7. NEVER use SELECT *
+8. ALWAYS alias tables and columns clearly
+9. INCLUDE relevant ID columns for relationships
 
 PERFORMANCE RULES:
 1. Use appropriate indexes (id, project_id fields)
@@ -112,22 +115,32 @@ Example: { "query": "SELECT id, name FROM projects WHERE id = :projectId LIMIT 1
 
 Remember: Safety and simplicity over complexity. When in doubt, return less data with a simpler query.`
 
-async function generateQuery(input: string, projectId: string, apiKey: string) {
+async function generateQuery({
+  requirement,
+  suggestion,
+  projectId,
+  apiKey,
+}: {
+  requirement: string
+  suggestion: string
+  projectId: string
+  apiKey: string
+}) {
   try {
     const openai = createOpenAI({
       apiKey,
     })
 
     console.log('Query input:')
-    console.log(input)
+    console.log(requirement, suggestion)
 
     const result = await generateObject({
       schema: z.object({
         query: z.string().describe(`The SQL query to execute`),
       }),
       model: openai('gpt-4o-mini'),
-      system: systemPrompt,
-      prompt: `Generate the query necessary to retrieve the data the user wants: ${input}. Only retrieve data related to the project with id: ${projectId}`,
+      system: getSystemPrompt(projectId),
+      prompt: `Generate the query necessary to retrieve the data the user wants: ${requirement}. Here is a suggestion: ${suggestion}.`,
     })
 
     console.log('Generated query:')
@@ -154,20 +167,30 @@ export function queryProjectTool({
     description:
       'Generate and execute a SQL query to retrieve information related to a project.',
     parameters: z.object({
-      question: z.string().describe('The question the user is asking.'),
+      requirement: z
+        .string()
+        .describe(
+          'A short phrase that describes what the user wants to do. It must explicitly mention the intention of the user.',
+        ),
+      suggestion: z
+        .string()
+        .describe('Our suggestion to retrieve the information the user wants.'),
       toolAction: z
         .string()
         .describe(
           'A short phrase that describes what the AI is doing. Example: Retrieving and analyzing module start dates...',
         ),
     }),
-    execute: async ({ question }): Promise<CustomToolResponse> => {
+    execute: async ({
+      requirement,
+      suggestion,
+    }): Promise<CustomToolResponse> => {
       // Generate the query
       const {
         success: genSuccess,
         result: queryString,
         error: genError,
-      } = await generateQuery(question, projectId, apiKey)
+      } = await generateQuery({ requirement, suggestion, projectId, apiKey })
 
       if (!genSuccess || !queryString) {
         return {
@@ -178,7 +201,7 @@ export function queryProjectTool({
 
       // Execute the generated query
       try {
-        const queryResult = await db.execute(sql.raw(queryString))
+        const queryResult = await db.run(sql.raw(queryString))
 
         return { success: true, result: queryResult.rows }
       } catch (e) {

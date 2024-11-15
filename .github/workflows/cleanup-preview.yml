@@ -16,9 +16,8 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v8
 
-      - name: Delete Neon Branch
-        uses: neondatabase/delete-branch-action@v3
-        with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          branch: preview/${{ steps.branch-name.outputs.current_branch }}
-          api_key: ${{ secrets.NEON_API_KEY }}
+      - name: Delete Turso Branch
+        run: |
+          curl -X DELETE \
+          "https://api.turso.tech/v1/organizations/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-${{ steps.branch-name.outputs.current_branch }}" \
+          -H "Authorization: Bearer ${{ secrets.TURSO_AUTH_TOKEN }}"

@@ -1,12 +1,12 @@
 # Gingga on the Edge
 
-A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle (Serverless PostgreSQL on Neon).
+A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle (Serverless SQLite on Turso).
 
 ## 🚀 Features
 
 - **Framework**: [Remix](https://remix.run/) with [Hono](https://hono.dev/) middleware
 - **Platform**: [Cloudflare Workers](https://workers.cloudflare.com/)
-- **Database**: Serverless PostgreSQL on [Neon](https://neon.tech/) with [Drizzle ORM](https://orm.drizzle.team/)
+- **Database**: Serverless SQLite on [Turso](https://turso.tech/) with [Drizzle ORM](https://orm.drizzle.team/)
 - **Authentication**: GitHub OAuth and TOTP support
 - **Email**: [Resend](https://resend.com/)
 - **UI Components**: [ShadcnUI](https://ui.shadcn.com/)
@@ -17,7 +17,7 @@ A modern web application built with Remix, Hono, Cloudflare Pages and Drizzle (S
 
 - Node.js >= 20.0.0
 - pnpm (recommended)
-- Neon account (Serverless PostgreSQL)
+- Turso account (Serverless SQLite)
 - Cloudflare account
 
 ## 🛠️ Setup

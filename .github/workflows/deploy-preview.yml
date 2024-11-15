@@ -2,9 +2,6 @@ name: Preview Deployment
 on: [pull_request]
 
 env:
-  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-  NEON_USERNAME: ${{ secrets.NEON_USERNAME }}
-  NEON_DB_NAME: ${{ secrets.NEON_DB_NAME }}
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -32,26 +29,24 @@ jobs:
         id: branch-name
         uses: tj-actions/branch-names@v8
 
-      - id: create-branch
-        name: Create Neon Database Branch
-        uses: neondatabase/create-branch-action@v5
+      - name: Create Database
+        id: create-db
+        uses: tursodatabase/create-database-action@v1
         with:
-          project_id: ${{ secrets.NEON_PROJECT_ID }}
-          username: ${{ secrets.NEON_USERNAME }}
-          branch_name: preview/${{ steps.branch-name.outputs.current_branch }}
-          api_key: ${{ secrets.NEON_API_KEY }}
-          database: ${{ secrets.NEON_DB_NAME }}
+          organization_name: ${{ secrets.TURSO_ORGANIZATION_NAME }}
+          api_token: ${{ secrets.TURSO_AUTH_TOKEN }}
+          existing_database_name: ${{ secrets.TURSO_DATABASE_NAME }}
+          new_database_name: 'preview-${{ steps.branch-name.outputs.current_branch }}'
 
       - name: Build
         run: pnpm run build
         env:
-          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Run Migrations
         run: pnpm run db:migrate
         env:
-          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
-          DIRECT_DB_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Deploy to Workers Preview
         uses: cloudflare/wrangler-action@v3
@@ -62,9 +57,9 @@ jobs:
           command: deploy --env preview
           environment: preview
           secrets: |
-            DATABASE_URL
+            TURSO_DB_URL
         env:
-          DATABASE_URL: ${{ steps.create-branch.outputs.db_url_with_pooler }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Extract Version ID
         id: version
@@ -80,4 +75,4 @@ jobs:
             🚀 Preview deployment is ready!
 
             Worker Preview URL: https://${{ steps.version.outputs.version_id }}-gingga-preview.jsegoviadev.workers.dev
-            Neon Database Branch: https://console.neon.tech/app/projects/${{ secrets.NEON_PROJECT_ID }}/branches/${{ steps.create-branch.outputs.branch_id }}
+            Turso Database Branch: https://app.turso.tech/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-${{ steps.branch-name.outputs.current_branch }}

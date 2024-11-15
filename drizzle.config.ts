@@ -9,6 +9,15 @@ if (!process.env.TURSO_DB_URL || !process.env.TURSO_AUTH_TOKEN) {
   )
 }
 
+// export default defineConfig({
+//   out: './app/db/drizzle',
+//   schema: './app/db/schema.ts',
+//   dialect: 'sqlite',
+//   dbCredentials: {
+//     url: 'file:sqlite.db',
+//   },
+// })
+
 export default defineConfig({
   out: './app/db/drizzle',
   schema: './app/db/schema.ts',
@@ -16,5 +25,8 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.TURSO_DB_URL,
     authToken: process.env.TURSO_AUTH_TOKEN,
+  },
+  migrations: {
+    prefix: 'timestamp',
   },
 })
