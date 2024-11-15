@@ -16,5 +16,5 @@ jobs:
       - name: Delete Turso Branch
         run: |
           curl -X DELETE \
-          "https://api.turso.tech/v1/organizations/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-${{ github.sha }}" \
+          "https://api.turso.tech/v1/organizations/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-pr-${{ github.event.pull_request.number }}" \
           -H "Authorization: Bearer ${{ secrets.TURSO_API_TOKEN }}"
