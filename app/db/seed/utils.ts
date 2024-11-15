@@ -2,7 +2,6 @@ import { Users, Passwords } from '../schema'
 import { eq, sql } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { faker } from '@faker-js/faker'
-import { AppLoadContext } from '@remix-run/cloudflare'
 import { db } from '.'
 
 export async function cleanupDb() {
@@ -12,12 +11,12 @@ export async function cleanupDb() {
         AND table_type = 'BASE TABLE';
     `
 
-  const tables = await db.execute(query)
+  const tables = (await db.run(query)).rows
 
   await db.transaction(async (tx) => {
     await Promise.all(
       tables.map((table) =>
-        tx.execute(sql.raw(`TRUNCATE TABLE ${table.table_name} CASCADE;`)),
+        tx.run(sql.raw(`TRUNCATE TABLE ${table.table_name} CASCADE;`)),
       ),
     )
   })

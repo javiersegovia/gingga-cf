@@ -1,12 +1,12 @@
-import { NeonDatabase } from 'drizzle-orm/neon-serverless'
+import { LibSQLDatabase } from 'drizzle-orm/libsql'
 import * as schema from '@/db/schema'
 import { Context } from 'hono'
 import type { SecureHeadersVariables } from 'hono/secure-headers'
-import { Client } from '@neondatabase/serverless'
+import { Client } from '@libsql/client/web'
 
 /* type your Hono variables (used with c.get/c.set) here */
 type Variables = SecureHeadersVariables & {
-  db: NeonDatabase<typeof schema> & {
+  db: LibSQLDatabase<typeof schema> & {
     $client: Client
   }
 }

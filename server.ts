@@ -4,13 +4,13 @@ import { Hono } from 'hono'
 import { sentry } from '@hono/sentry'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { remix } from 'remix-hono/handler'
-import { Client, neonConfig } from '@neondatabase/serverless'
-import { drizzle } from 'drizzle-orm/neon-serverless'
 import * as schema from '@/db/schema'
 import { config } from 'dotenv'
 import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
-import ws from 'ws'
+
+import { createClient } from '@libsql/client/web'
+import { drizzle } from 'drizzle-orm/libsql'
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler
@@ -71,17 +71,19 @@ app.onError((err, c) => {
 })
 
 app.use('*', async (c, next) => {
-  /**
-   * This is needed for the dev environment.
-   * In production, WebSockets are supported by the Worker
-   */
-  if (typeof WebSocket === 'undefined') {
-    neonConfig.webSocketConstructor = ws
+  if (!c.env.TURSO_DB_URL || !c.env.TURSO_AUTH_TOKEN) {
+    throw new Error(
+      'TURSO_DB_URL or TURSO_AUTH_TOKEN is not set. Update your .dev.vars file.',
+    )
   }
-  const client = new Client(c.env.DATABASE_URL)
-  await client.connect()
-  const db = drizzle(client, { schema })
-  const closeDbConnection = () => c.executionCtx.waitUntil(client.end())
+
+  const db = drizzle(
+    createClient({
+      url: c.env.TURSO_DB_URL.trim(),
+      authToken: c.env.TURSO_AUTH_TOKEN.trim(),
+    }),
+    { schema },
+  )
 
   const remixContext = {
     ...getLoadContext(c),
@@ -113,26 +115,8 @@ app.use('*', async (c, next) => {
       response = await handler(c.req.raw, remixContext)
     }
 
-    /**
-     * This is needed to ensure the database connection is closed
-     * after the response is sent
-     */
-    if (response?.body && response.body instanceof ReadableStream) {
-      const transformStream = new TransformStream({
-        flush: () => closeDbConnection(),
-      })
-
-      return new Response(response.body?.pipeThrough(transformStream), {
-        headers: response.headers,
-        status: response.status,
-        statusText: response.statusText,
-      })
-    }
-
-    closeDbConnection()
     return response
   } catch (error: unknown) {
-    closeDbConnection()
     console.error(error)
     return c.text('Error in server.ts')
   }

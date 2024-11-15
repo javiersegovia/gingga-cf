@@ -1,19 +1,25 @@
+import { v7 as uuidv7 } from 'uuid'
 import {
-  pgTable,
+  sqliteTable,
   text,
-  timestamp,
   integer,
-  uuid,
   primaryKey,
   unique,
-  jsonb,
   real,
-} from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+} from 'drizzle-orm/sqlite-core'
+import { relations, sql } from 'drizzle-orm'
 
+// Helper for UUID default values
+const uuidDefault = () => text('id').notNull().$defaultFn(uuidv7)
+
+// Helper for timestamps
 const timestamps = {
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').$onUpdate(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$onUpdate(
+    () => new Date(),
+  ),
 }
 
 // ________________________________________________________________________________________________
@@ -83,63 +89,63 @@ export type ComplexityAssessmentCriterionType =
 // ________________________________________________________________________________________________
 // TABLES
 // ________________________________________________________________________________________________
-export const Users = pgTable('users', {
+export const Users = sqliteTable('users', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   email: text('email').notNull().unique(),
   firstName: text('first_name'),
   lastName: text('last_name'),
 })
 
-export const Passwords = pgTable('passwords', {
+export const Passwords = sqliteTable('passwords', {
   hash: text('hash').notNull(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .primaryKey()
     .notNull()
     .references(() => Users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 })
 
-export const Sessions = pgTable('sessions', {
+export const Sessions = sqliteTable('sessions', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  expirationDate: timestamp('expiration_date').notNull(),
-  userId: uuid('user_id')
+  id: uuidDefault().primaryKey(),
+  expirationDate: integer('expiration_date', { mode: 'timestamp' }).notNull(),
+  userId: text('user_id')
     .notNull()
     .references(() => Users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 })
 
-export const Permissions = pgTable('permissions', {
+export const Permissions = sqliteTable('permissions', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   action: text('action').notNull(),
   entity: text('entity').notNull(),
   access: text('access').notNull(),
   description: text('description').default(''),
 })
 
-export const Roles = pgTable('roles', {
+export const Roles = sqliteTable('roles', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   name: text('name').notNull().unique(),
   description: text('description').default(''),
 })
 
-export const UserRoles = pgTable('user_roles', {
-  userId: uuid('user_id')
+export const UserRoles = sqliteTable('user_roles', {
+  userId: text('user_id')
     .notNull()
     .references(() => Users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
-  roleId: uuid('role_id')
+  roleId: text('role_id')
     .notNull()
     .references(() => Roles.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 })
 
-export const RolePermissions = pgTable(
+export const RolePermissions = sqliteTable(
   'role_permissions',
   {
-    roleId: uuid('role_id')
+    roleId: text('role_id')
       .notNull()
       .references(() => Roles.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    permissionId: uuid('permission_id')
+    permissionId: text('permission_id')
       .notNull()
       .references(() => Permissions.id, {
         onDelete: 'cascade',
@@ -151,11 +157,11 @@ export const RolePermissions = pgTable(
   }),
 )
 
-export const Verifications = pgTable(
+export const Verifications = sqliteTable(
   'verifications',
   {
     ...timestamps,
-    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    id: uuidDefault().primaryKey(),
     type: text('type').notNull(),
     target: text('target').notNull(),
     secret: text('secret').notNull(),
@@ -163,32 +169,32 @@ export const Verifications = pgTable(
     digits: integer('digits').notNull(),
     period: integer('period').notNull(),
     charSet: text('char_set').notNull(),
-    userId: uuid('user_id').references(() => Users.id, {
+    userId: text('user_id').references(() => Users.id, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-    expiresAt: timestamp('expires_at'),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }),
   },
   (table) => ({
     targetTypeUnique: unique().on(table.target, table.type),
   }),
 )
 
-export const Connections = pgTable('connections', {
+export const Connections = sqliteTable('connections', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   providerName: text('provider_name').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => Users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 })
 
-export const Projects = pgTable('projects', {
+export const Projects = sqliteTable('projects', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  deletedAt: timestamp('deleted_at'),
-  userId: uuid('user_id').references(() => Users.id, {
+  id: uuidDefault().primaryKey(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  userId: text('user_id').references(() => Users.id, {
     onDelete: 'set null',
     onUpdate: 'cascade',
   }),
@@ -196,39 +202,43 @@ export const Projects = pgTable('projects', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   mainObjective: text('main_objective').notNull(),
-  specificObjectives: text('specific_objectives').array(),
-  metadata: jsonb('metadata'),
+  specificObjectives: text('specific_objectives', { mode: 'json' }).$type<
+    string[]
+  >(),
+  metadata: text('metadata', { mode: 'json' }),
 })
 
-export const ProjectModules = pgTable('project_modules', {
+export const ProjectModules = sqliteTable('project_modules', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectId: uuid('project_id')
+  id: uuidDefault().primaryKey(),
+  projectId: text('project_id')
     .notNull()
     .references(() => Projects.id),
   name: text('name').notNull(),
   description: text('description').notNull(),
   additionalInfo: text('additional_info'),
   order: integer('order').notNull().default(0),
-  generalModuleId: uuid('general_module_id').references(
+  generalModuleId: text('general_module_id').references(
     () => GeneralModules.id,
   ),
 })
 
-export const ProjectFunctionalities = pgTable('project_functionalities', {
+export const ProjectFunctionalities = sqliteTable('project_functionalities', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   name: text('name').notNull(),
   description: text('description').notNull(),
   type: text('type', { enum: projectFunctionalityType }).notNull(),
-  acceptanceCriteria: text('acceptance_criteria').array(),
-  projectId: uuid('project_id')
+  acceptanceCriteria: text('acceptance_criteria', { mode: 'json' }).$type<
+    string[]
+  >(),
+  projectId: text('project_id')
     .notNull()
     .references(() => Projects.id, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
     }),
-  projectModuleId: uuid('project_module_id')
+  projectModuleId: text('project_module_id')
     .references(() => ProjectModules.id, {
       onDelete: 'cascade',
       onUpdate: 'cascade',
@@ -236,41 +246,41 @@ export const ProjectFunctionalities = pgTable('project_functionalities', {
     .notNull(),
 })
 
-export const TestCases = pgTable('test_cases', {
+export const TestCases = sqliteTable('test_cases', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectFunctionalityId: uuid('project_functionality_id')
+  id: uuidDefault().primaryKey(),
+  projectFunctionalityId: text('project_functionality_id')
     .notNull()
     .references(() => ProjectFunctionalities.id),
   name: text('name').notNull(),
   description: text('description').notNull(),
 })
 
-export const GeneralModules = pgTable('general_modules', {
+export const GeneralModules = sqliteTable('general_modules', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   name: text('name').notNull(),
   description: text('description').notNull(),
   additionalInfo: text('additional_info'),
 })
 
-export const Chats = pgTable('chats', {
+export const Chats = sqliteTable('chats', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  id: uuidDefault().primaryKey(),
   message: text('message').notNull(),
   sender: text('sender', { enum: sender }).notNull(),
-  projectId: uuid('project_id')
+  projectId: text('project_id')
     .notNull()
     .references(() => Projects.id),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => Users.id),
 })
 
-export const FunctionPoints = pgTable('function_points', {
+export const FunctionPoints = sqliteTable('function_points', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectFunctionalityId: uuid('project_functionality_id')
+  id: uuidDefault().primaryKey(),
+  projectFunctionalityId: text('project_functionality_id')
     .notNull()
     .references(() => ProjectFunctionalities.id, {
       onDelete: 'cascade',
@@ -284,10 +294,10 @@ export const FunctionPoints = pgTable('function_points', {
   functionPoints: integer('function_points').notNull(),
 })
 
-export const ModuleTime = pgTable('module_time', {
+export const ModuleTime = sqliteTable('module_time', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectModuleId: uuid('project_module_id')
+  id: uuidDefault().primaryKey(),
+  projectModuleId: text('project_module_id')
     .notNull()
     .references(() => ProjectModules.id, {
       onDelete: 'cascade',
@@ -305,10 +315,10 @@ export const ModuleTime = pgTable('module_time', {
   actualHours: real('actual_hours'),
 })
 
-export const FunctionalityTime = pgTable('functionality_time', {
+export const FunctionalityTime = sqliteTable('functionality_time', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectFunctionalityId: uuid('project_functionality_id')
+  id: uuidDefault().primaryKey(),
+  projectFunctionalityId: text('project_functionality_id')
     .notNull()
     .references(() => ProjectFunctionalities.id, {
       onDelete: 'cascade',
@@ -326,16 +336,16 @@ export const FunctionalityTime = pgTable('functionality_time', {
   actualHours: real('actual_hours'),
 })
 
-export const ComplexityAssessmentCriteria = pgTable(
+export const ComplexityAssessmentCriteria = sqliteTable(
   'complexity_assessment_criteria',
   {
     ...timestamps,
-    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    id: uuidDefault().primaryKey(),
     type: text('type', { enum: complexityAssessmentCriterionType }).notNull(),
     score: real('score').notNull(),
     justification: text('justification').notNull(),
 
-    functionalityTimeId: uuid('functionality_time_id')
+    functionalityTimeId: text('functionality_time_id')
       .notNull()
       .references(() => FunctionalityTime.id, {
         onDelete: 'cascade',
@@ -344,10 +354,10 @@ export const ComplexityAssessmentCriteria = pgTable(
   },
 )
 
-export const ProjectTimelines = pgTable('project_timelines', {
+export const ProjectTimelines = sqliteTable('project_timelines', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectId: uuid('project_id')
+  id: uuidDefault().primaryKey(),
+  projectId: text('project_id')
     .notNull()
     .references(() => Projects.id, {
       onDelete: 'cascade',
@@ -357,10 +367,10 @@ export const ProjectTimelines = pgTable('project_timelines', {
   summary: text('summary'),
 })
 
-export const TimelineItems = pgTable('timeline_items', {
+export const TimelineItems = sqliteTable('timeline_items', {
   ...timestamps,
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  projectTimelineId: uuid('project_timeline_id')
+  id: uuidDefault().primaryKey(),
+  projectTimelineId: text('project_timeline_id')
     .notNull()
     .references(() => ProjectTimelines.id, {
       onDelete: 'cascade',
@@ -373,17 +383,17 @@ export const TimelineItems = pgTable('timeline_items', {
   summary: text('summary').notNull(),
 })
 
-export const TimelineItemsToProjectModules = pgTable(
+export const TimelineItemsToProjectModules = sqliteTable(
   'timeline_items_to_project_modules',
   {
     ...timestamps,
-    timelineItemId: uuid('timeline_item_id')
+    timelineItemId: text('timeline_item_id')
       .notNull()
       .references(() => TimelineItems.id, {
         onDelete: 'cascade',
         onUpdate: 'cascade',
       }),
-    projectModuleId: uuid('project_module_id')
+    projectModuleId: text('project_module_id')
       .notNull()
       .references(() => ProjectModules.id, {
         onDelete: 'cascade',

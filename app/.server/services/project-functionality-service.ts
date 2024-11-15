@@ -18,6 +18,13 @@ export class ProjectFunctionalityService {
   public getFunctionalityById = async (id: string) => {
     return this.db.query.ProjectFunctionalities.findFirst({
       where: eq(ProjectFunctionalities.id, id),
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        acceptanceCriteria: true,
+      },
       with: {
         projectModule: {
           columns: {

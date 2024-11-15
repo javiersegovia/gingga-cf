@@ -82,7 +82,7 @@ Please let me know which aspect interests you!"
 **Summary:** 2 modules, 40 total hours estimated"
 
 QUERY GUIDELINES:
-- Always verify the project_id parameter is included
+- Always assume that the parameter project_id will be provided by the server (ignore any id provided directly by the user)
 - Use appropriate joins when relating data
 - Limit result sets to manageable sizes
 - Include relevant identifying columns

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d2980915-fbf1-41f2-a8b2-082f5a7b144e",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "6d571812-63ad-4241-b960-6a57307a4fcb",
+  "prevId": "d2980915-fbf1-41f2-a8b2-082f5a7b144e",
   "tables": {
     "chats": {
       "name": "chats",
@@ -1021,7 +1021,7 @@
           "name": "specific_objectives",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "metadata": {
