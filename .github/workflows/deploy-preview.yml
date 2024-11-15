@@ -31,6 +31,7 @@ jobs:
 
       - name: Create Turso Database Branch
         id: create-db
+        shell: bash
         run: |
           RESPONSE=$(curl -X POST \
           -H "Authorization: Bearer ${{ secrets.TURSO_API_TOKEN }}" \
@@ -49,17 +50,18 @@ jobs:
             exit 1
           fi
 
-          echo "hostname=$HOSTNAME" >> $GITHUB_ENV
+          echo "Extracted hostname: $HOSTNAME"
+          echo "hostname=libsql://$HOSTNAME" >> $GITHUB_OUTPUT
 
       - name: Build
         run: pnpm run build
         env:
-          TURSO_DB_URL: ${{ env.hostname }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Run Migrations
         run: pnpm run db:migrate
         env:
-          TURSO_DB_URL: ${{ env.hostname }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Deploy to Workers Preview
         uses: cloudflare/wrangler-action@v3
@@ -72,7 +74,7 @@ jobs:
           secrets: |
             TURSO_DB_URL
         env:
-          TURSO_DB_URL: ${{ env.hostname }}
+          TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
       - name: Extract Version ID
         id: version
@@ -88,4 +90,4 @@ jobs:
             🚀 Preview deployment is ready!
 
             Worker Preview URL: https://${{ steps.version.outputs.version_id }}-gingga-preview.jsegoviadev.workers.dev
-            Turso Database Branch: https://app.turso.tech/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-${{ steps.branch-name.outputs.current_branch }}
+            Turso Database Branch: https://app.turso.tech/${{ secrets.TURSO_ORGANIZATION_NAME }}/databases/preview-${{ github.sha }}
