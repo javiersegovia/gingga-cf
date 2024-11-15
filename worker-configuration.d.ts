@@ -11,6 +11,8 @@ interface Env {
 	PROD_APP_URL: "https://gingga.com";
 	DATABASE_URL: string;
 	DIRECT_DB_URL: string;
+	TURSO_DB_URL: string;
+	TURSO_AUTH_TOKEN: string;
 	SESSION_SECRET: string;
 	HONEYPOT_SECRET: string;
 	GITHUB_CLIENT_ID: string;

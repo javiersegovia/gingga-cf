@@ -2,10 +2,23 @@ import { cleanupDb } from './utils'
 import { seedRolesAndPermissions } from './roles-and-permissions'
 import { seedUsers } from './users'
 import { seedGeneralModules } from './general-modules'
-import { drizzle } from 'drizzle-orm/postgres-js'
+import { drizzle } from 'drizzle-orm/libsql'
 import * as schema from '../schema'
+import { createClient } from '@libsql/client/web'
 
-export const db = drizzle(process.env.DATABASE_URL!, { schema })
+if (!process.env.TURSO_DB_URL || !process.env.TURSO_AUTH_TOKEN) {
+  throw new Error(
+    'TURSO_DB_URL or TURSO_AUTH_TOKEN is not set. Update your .dev.vars file.',
+  )
+}
+
+export const db = drizzle(
+  createClient({
+    url: process.env.TURSO_DB_URL.trim(),
+    authToken: process.env.TURSO_AUTH_TOKEN.trim(),
+  }),
+  { schema },
+)
 
 async function seed() {
   console.info('🌱 Seeding...')
@@ -28,5 +41,5 @@ seed()
     process.exit(1)
   })
   .finally(async () => {
-    await db.$client.end()
+    db.$client.close()
   })

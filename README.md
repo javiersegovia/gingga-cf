@@ -48,7 +48,9 @@ ADMIN_USER_EMAIL=
 ADMIN_USER_PASSWORD=
 ```
 
-4. Start the development server:
+4. Install [Turso CLI](https://docs.turso.tech/cli/installation/)
+
+5. Start the development server:
 
 ```bash
 pnpm dev
