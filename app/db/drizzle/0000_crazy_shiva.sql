@@ -1,4 +1,4 @@
-CREATE TABLE `chats` (
+CREATE TABLE IF NOT EXISTS `chats` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE `chats` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `complexity_assessment_criteria` (
+CREATE TABLE IF NOT EXISTS `complexity_assessment_criteria` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE `complexity_assessment_criteria` (
 	FOREIGN KEY (`functionality_time_id`) REFERENCES `functionality_time`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `connections` (
+CREATE TABLE IF NOT EXISTS `connections` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE `connections` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `function_points` (
+CREATE TABLE IF NOT EXISTS `function_points` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -43,8 +43,8 @@ CREATE TABLE `function_points` (
 	FOREIGN KEY (`project_functionality_id`) REFERENCES `project_functionalities`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `function_points_project_functionality_id_unique` ON `function_points` (`project_functionality_id`);--> statement-breakpoint
-CREATE TABLE `functionality_time` (
+CREATE UNIQUE INDEX IF NOT EXISTS `function_points_project_functionality_id_unique` ON `function_points` (`project_functionality_id`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `functionality_time` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -58,8 +58,8 @@ CREATE TABLE `functionality_time` (
 	FOREIGN KEY (`project_functionality_id`) REFERENCES `project_functionalities`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `functionality_time_project_functionality_id_unique` ON `functionality_time` (`project_functionality_id`);--> statement-breakpoint
-CREATE TABLE `general_modules` (
+CREATE UNIQUE INDEX IF NOT EXISTS `functionality_time_project_functionality_id_unique` ON `functionality_time` (`project_functionality_id`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `general_modules` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE `general_modules` (
 	`additional_info` text
 );
 --> statement-breakpoint
-CREATE TABLE `module_time` (
+CREATE TABLE IF NOT EXISTS `module_time` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -82,14 +82,14 @@ CREATE TABLE `module_time` (
 	FOREIGN KEY (`project_module_id`) REFERENCES `project_modules`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `module_time_project_module_id_unique` ON `module_time` (`project_module_id`);--> statement-breakpoint
-CREATE TABLE `passwords` (
+CREATE UNIQUE INDEX IF NOT EXISTS `module_time_project_module_id_unique` ON `module_time` (`project_module_id`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `passwords` (
 	`hash` text NOT NULL,
 	`user_id` text PRIMARY KEY NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `permissions` (
+CREATE TABLE IF NOT EXISTS `permissions` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE `permissions` (
 	`description` text DEFAULT ''
 );
 --> statement-breakpoint
-CREATE TABLE `project_functionalities` (
+CREATE TABLE IF NOT EXISTS `project_functionalities` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE `project_functionalities` (
 	FOREIGN KEY (`project_module_id`) REFERENCES `project_modules`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `project_modules` (
+CREATE TABLE IF NOT EXISTS `project_modules` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE `project_modules` (
 	FOREIGN KEY (`general_module_id`) REFERENCES `general_modules`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `project_timelines` (
+CREATE TABLE IF NOT EXISTS `project_timelines` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -136,8 +136,8 @@ CREATE TABLE `project_timelines` (
 	FOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `project_timelines_project_id_unique` ON `project_timelines` (`project_id`);--> statement-breakpoint
-CREATE TABLE `projects` (
+CREATE UNIQUE INDEX IF NOT EXISTS `project_timelines_project_id_unique` ON `project_timelines` (`project_id`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `projects` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -152,8 +152,8 @@ CREATE TABLE `projects` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE set null
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `projects_slug_unique` ON `projects` (`slug`);--> statement-breakpoint
-CREATE TABLE `role_permissions` (
+CREATE UNIQUE INDEX IF NOT EXISTS `projects_slug_unique` ON `projects` (`slug`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `role_permissions` (
 	`role_id` text NOT NULL,
 	`permission_id` text NOT NULL,
 	PRIMARY KEY(`role_id`, `permission_id`),
@@ -161,7 +161,7 @@ CREATE TABLE `role_permissions` (
 	FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `roles` (
+CREATE TABLE IF NOT EXISTS `roles` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -169,8 +169,8 @@ CREATE TABLE `roles` (
 	`description` text DEFAULT ''
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `roles_name_unique` ON `roles` (`name`);--> statement-breakpoint
-CREATE TABLE `sessions` (
+CREATE UNIQUE INDEX IF NOT EXISTS `roles_name_unique` ON `roles` (`name`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `sessions` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE `sessions` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `test_cases` (
+CREATE TABLE IF NOT EXISTS `test_cases` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -189,7 +189,7 @@ CREATE TABLE `test_cases` (
 	FOREIGN KEY (`project_functionality_id`) REFERENCES `project_functionalities`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `timeline_items` (
+CREATE TABLE IF NOT EXISTS `timeline_items` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -201,7 +201,7 @@ CREATE TABLE `timeline_items` (
 	FOREIGN KEY (`project_timeline_id`) REFERENCES `project_timelines`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `timeline_items_to_project_modules` (
+CREATE TABLE IF NOT EXISTS `timeline_items_to_project_modules` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`timeline_item_id` text NOT NULL,
@@ -211,14 +211,14 @@ CREATE TABLE `timeline_items_to_project_modules` (
 	FOREIGN KEY (`project_module_id`) REFERENCES `project_modules`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `user_roles` (
+CREATE TABLE IF NOT EXISTS `user_roles` (
 	`user_id` text NOT NULL,
 	`role_id` text NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE cascade,
 	FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -227,8 +227,8 @@ CREATE TABLE `users` (
 	`last_name` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
-CREATE TABLE `verifications` (
+CREATE UNIQUE INDEX IF NOT EXISTS `users_email_unique` ON `users` (`email`);--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS `verifications` (
 	`created_at` integer DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` integer,
 	`id` text PRIMARY KEY NOT NULL,
@@ -244,4 +244,4 @@ CREATE TABLE `verifications` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE cascade ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `verifications_target_type_unique` ON `verifications` (`target`,`type`);
+CREATE UNIQUE INDEX IF NOT EXISTS `verifications_target_type_unique` ON `verifications` (`target`,`type`);
