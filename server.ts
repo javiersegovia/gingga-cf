@@ -76,14 +76,15 @@ app.use('*', async (c, next) => {
       'TURSO_DB_URL or TURSO_AUTH_TOKEN is not set. Update your .dev.vars file.',
     )
   }
+  const client = createClient({
+    url: c.env.TURSO_DB_URL.trim(),
+    authToken: c.env.TURSO_AUTH_TOKEN.trim(),
+  })
+  const db = drizzle(client, { schema })
 
-  const db = drizzle(
-    createClient({
-      url: c.env.TURSO_DB_URL.trim(),
-      authToken: c.env.TURSO_AUTH_TOKEN.trim(),
-    }),
-    { schema },
-  )
+  function closeDbConnection() {
+    if (!client.closed) client.close()
+  }
 
   const remixContext = {
     ...getLoadContext(c),
@@ -111,12 +112,29 @@ app.use('*', async (c, next) => {
         const { createRequestHandler } = await import('@remix-run/cloudflare')
         handler = createRequestHandler(build, 'development')
       }
-
       response = await handler(c.req.raw, remixContext)
     }
 
+    /**
+     * This is needed to ensure the database connection is closed
+     * after the response is sent
+     */
+    if (response?.body && response.body instanceof ReadableStream) {
+      const transformStream = new TransformStream({
+        flush: () => closeDbConnection(),
+      })
+
+      return new Response(response.body?.pipeThrough(transformStream), {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+
+    closeDbConnection()
     return response
   } catch (error: unknown) {
+    closeDbConnection()
     console.error(error)
     return c.text('Error in server.ts')
   }
