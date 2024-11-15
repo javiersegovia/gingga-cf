@@ -37,9 +37,8 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
     return json({ functionalities: generatedFunctionalities })
   } catch (error) {
     console.error('Error in AI action:', error)
-    return json(
-      { error: 'An error occurred while processing the request' },
-      { status: 500 },
-    )
+    throw json('An error occurred while processing the request', {
+      status: 500,
+    })
   }
 }
