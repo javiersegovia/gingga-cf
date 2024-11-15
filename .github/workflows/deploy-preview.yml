@@ -58,10 +58,11 @@ jobs:
         env:
           TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
 
-      - name: Run Migrations
+      - name: Apply Database Migrations
         run: pnpm run db:migrate
         env:
           TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
       - name: Deploy to Workers Preview
         uses: cloudflare/wrangler-action@v3
@@ -73,8 +74,10 @@ jobs:
           environment: preview
           secrets: |
             TURSO_DB_URL
+            TURSO_AUTH_TOKEN
         env:
           TURSO_DB_URL: ${{ steps.create-db.outputs.hostname }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
       - name: Extract Version ID
         id: version
