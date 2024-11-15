@@ -125,9 +125,11 @@ export function Navbar() {
           {user ? (
             <UserDropdown user={user} />
           ) : (
-            <Link to="/login" className="text-gray-400 hover:text-gray-200">
-              Sign in
-            </Link>
+            <>
+              {/* <Link to="/login" className="text-gray-400 hover:text-gray-200">
+                // Sign in //{' '}
+              </Link> */}
+            </>
           )}
         </div>
       </nav>
