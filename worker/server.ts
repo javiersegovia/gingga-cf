@@ -4,13 +4,10 @@ import { Hono } from 'hono'
 import { sentry } from '@hono/sentry'
 import { secureHeaders, NONCE } from 'hono/secure-headers'
 import { remix } from 'remix-hono/handler'
-import * as schema from '@/db/schema'
 import { config } from 'dotenv'
 import { getLoadContext } from './load-context'
 import type { ContextEnv } from './load-context'
-
-import { createClient } from '@libsql/client/web'
-import { drizzle } from 'drizzle-orm/libsql'
+import { buildDb } from '@/db/setup'
 
 const app = new Hono<ContextEnv>()
 let handler: RequestHandler
@@ -65,26 +62,13 @@ app.use('*', async (c, next) => {
 // TODO - Implement a proper healthcheck with db connection and alerts
 
 app.onError((err, c) => {
-  console.log('Error in server middleware')
-  console.error(err)
+  // console.log('Error in server middleware')
+  console.error(err.message)
   return c.text('Error in server middleware')
 })
 
 app.use('*', async (c, next) => {
-  if (!c.env.TURSO_DB_URL || !c.env.TURSO_AUTH_TOKEN) {
-    throw new Error(
-      'TURSO_DB_URL or TURSO_AUTH_TOKEN is not set. Update your .dev.vars file.',
-    )
-  }
-  const client = createClient({
-    url: c.env.TURSO_DB_URL.trim(),
-    authToken: c.env.TURSO_AUTH_TOKEN.trim(),
-  })
-  const db = drizzle(client, { schema })
-
-  function closeDbConnection() {
-    if (!client.closed) client.close()
-  }
+  const { db, closeDbConnection } = buildDb(c.env)
 
   const remixContext = {
     ...getLoadContext(c),
@@ -96,7 +80,7 @@ app.use('*', async (c, next) => {
 
     if (process.env.NODE_ENV !== 'development' || import.meta.env.PROD) {
       // @ts-ignore
-      const serverBuild = await import('./build/server')
+      const serverBuild = await import('../build/server')
       const remixHandler = remix({
         // @ts-ignore
         build: serverBuild,

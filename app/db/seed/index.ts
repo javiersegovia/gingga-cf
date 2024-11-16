@@ -1,24 +1,14 @@
+import { config } from 'dotenv'
 import { cleanupDb } from './utils'
 import { seedRolesAndPermissions } from './roles-and-permissions'
 import { seedUsers } from './users'
 import { seedGeneralModules } from './general-modules'
-import { drizzle } from 'drizzle-orm/libsql'
-import * as schema from '../schema'
-import { createClient } from '@libsql/client/web'
+import { buildDb } from '../setup'
 
-if (!process.env.TURSO_DB_URL || !process.env.TURSO_AUTH_TOKEN) {
-  throw new Error(
-    'TURSO_DB_URL or TURSO_AUTH_TOKEN is not set. Update your .dev.vars file.',
-  )
-}
+config({ path: '.dev.vars' })
 
-export const db = drizzle(
-  createClient({
-    url: process.env.TURSO_DB_URL.trim(),
-    authToken: process.env.TURSO_AUTH_TOKEN.trim(),
-  }),
-  { schema },
-)
+const { db, closeDbConnection } = buildDb(process.env as unknown as Env)
+export { db }
 
 async function seed() {
   console.info('🌱 Seeding...')
@@ -41,5 +31,5 @@ seed()
     process.exit(1)
   })
   .finally(async () => {
-    db.$client.close()
+    closeDbConnection()
   })
