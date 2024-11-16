@@ -9,10 +9,10 @@ interface Env {
 	SENTRY_ENABLED_IN_DEV: false;
 	DEV_APP_URL: "http://localhost:3000";
 	PROD_APP_URL: "https://gingga.com";
-	DATABASE_URL: string;
-	DIRECT_DB_URL: string;
 	TURSO_DB_URL: string;
+	TURSO_LOCAL_DB_URL: string;
 	TURSO_AUTH_TOKEN: string;
+	TURSO_API_TOKEN: string;
 	SESSION_SECRET: string;
 	HONEYPOT_SECRET: string;
 	GITHUB_CLIENT_ID: string;
@@ -26,8 +26,6 @@ interface Env {
 	SENTRY_AUTH_TOKEN: string;
 	CLOUDFLARE_API_TOKEN: string;
 	CLOUDFLARE_ACCOUNT_ID: string;
-	NEON_PROJECT_ID: string;
-	NEON_API_KEY: string;
 	GH_TOKEN: string;
 	CLOUDFLARE_TURNSTILE_SITE_KEY: string;
 	CLOUDFLARE_TURNSTILE_SECRET: string;

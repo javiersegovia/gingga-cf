@@ -1,7 +1,6 @@
 import { createUser } from './utils'
 import { UserRoles, Roles } from '../schema'
 import { eq } from 'drizzle-orm'
-import { AppLoadContext } from '@remix-run/cloudflare'
 // import { MOCK_CODE_GITHUB } from '@/core/auth/providers/constants'
 // import { insertGitHubUser } from '../../../tests/mocks/github'
 import { db } from '.'

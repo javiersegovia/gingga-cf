@@ -1,6 +1,5 @@
 import { Permissions, Roles, RolePermissions } from '../schema'
 import { eq } from 'drizzle-orm'
-import { AppLoadContext } from '@remix-run/cloudflare'
 import { db } from '.'
 
 export async function seedRolesAndPermissions() {

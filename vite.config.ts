@@ -69,7 +69,7 @@ export default defineConfig({
     tsconfigPaths(),
     devServer({
       adapter,
-      entry: 'server.ts',
+      entry: 'worker/server.ts',
       exclude: [...defaultOptions.exclude, '/assets/**', '/app/**'],
       injectClientScript: false,
     }),
